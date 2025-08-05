@@ -2,172 +2,142 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ramp and Projectile Lab Simulation</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            background: #f0f8ff; /* AliceBlue */
-            margin: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #mainContainer {
-            display: flex;
-            width: 1150px; /* Adjusted width for wider canvas */
-            margin-bottom: 10px;
-             align-items: flex-start; /* Align items to top */
-        }
-        #canvasContainer {
-            position: relative;
-            background: #ffffff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-radius: 10px; /* Added rounded corners to container */
-            overflow: hidden; /* Ensures content respects rounded corners */
-        }
-        canvas {
-            border: 1px solid #ccc;
-            display: block;
-            border-radius: 10px; /* Added rounded corners to canvas */
-        }
-        #rangeBox {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: rgba(255, 255, 255, 0.9); /* Slightly less transparent */
-            border: 2px solid #007bff;
-            border-radius: 5px;
-            padding: 8px 15px;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #333;
-            display: none; /* Hidden initially */
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 10; /* Ensure it's on top */
-        }
-         #rangeBox span {
-             color: #007bff; /* Blue value */
-             margin-left: 5px;
-         }
-
-        #controlsContainer {
-            margin-left: 25px;
-            padding: 15px;
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            min-width: 250px; /* Ensure enough space */
-            max-height: 600px; /* Limit height if controls get long */
-             overflow-y: auto; /* Add scroll if needed */
-        }
-        /* ... (rest of CSS remains the same) ... */
-         .control-group {
-            margin-bottom: 15px;
-        }
-        .control-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-        .control-group input[type="range"] {
-            width: 160px;
-            vertical-align: middle;
-             cursor: pointer;
-        }
-        .control-group input[type="number"] {
-            width: 70px;
-            margin-left: 10px;
-            vertical-align: middle;
-            padding: 4px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-         .control-group input[type="checkbox"] {
-             vertical-align: middle;
-             margin-right: 8px;
-             cursor: pointer;
-         }
-         #mathModeLabel {
-             font-weight: normal;
-             color: #333;
-             cursor: pointer;
-         }
-        button {
-            padding: 10px 18px;
-            margin-right: 8px;
-            margin-top: 10px;
-            font-size: 1em;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            transition: background-color 0.2s ease;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #resetBtn {
-            background-color: #6c757d;
-        }
-        #resetBtn:hover {
-            background-color: #5a6268;
-        }
-         h2 {
-             color: #333;
-             margin-bottom: 25px;
-         }
-    </style>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom font and base styling */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Style for range inputs to match the theme */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #d1d5db; /* gray-300 */
+            border-radius: 9999px;
+            outline: none;
+            opacity: 0.9;
+            transition: opacity .2s;
+        }
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6; /* blue-500 */
+            cursor: pointer;
+            border-radius: 9999px;
+            border: 2px solid white;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6; /* blue-500 */
+            cursor: pointer;
+            border-radius: 9999px;
+            border: 2px solid white;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <h2>Ramp and Projectile Lab Simulation</h2>
+<body class="bg-gray-100 text-gray-800">
 
-    <div id="mainContainer">
-        <div id="canvasContainer">
-             <canvas id="simCanvas" width="830" height="500"></canvas>
-            <div id="rangeBox">
-                <strong>Range:</strong> <span id="rangeVal">0.000</span> m
-            </div>
-        </div>
+    <div class="container mx-auto p-2 md:p-4">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Ramp & Projectile Lab</h1>
+        </header>
 
-        <div id="controlsContainer">
-             <h4>Simulation Setup</h4>
-            <div class="control-group">
-                 <label for="tableHeightRange">Table Height (m):</label>
-                <input type="range" id="tableHeightRange" min="0.5" max="2.0" step="0.05" value="1.0">
-                <input type="number" id="tableHeightNumber" min="0.5" max="2.0" step="0.05" value="1.0">
-            </div>
-            <div class="control-group">
-                <label for="rampAngleRange">Ramp Angle (°):</label>
-                <input type="range" id="rampAngleRange" min="10" max="60" step="1" value="30">
-                <input type="number" id="rampAngleNumber" min="10" max="60" step="1" value="30">
-            </div>
-            <div class="control-group">
-                <label for="rampHeightNumber">Ramp Start Height (m):</label>
-				<input type="range" id="rampHeightRange" min="0.1" max="0.9" step="0.05" value="0.7">
-                 <input type="number" id="rampHeightNumber" min="0.1" max="0.9" step="0.05" value="0.7">
-            </div>
-            <div class="control-group">
-                <label for="muRange">Table Friction (μ):</label>
-                <input type="range" id="muRange" min="0" max="0.5" step="0.01" value="0.0">
-                <input type="number" id="muNumber" min="0" max="0.5" step="0.01" value="0.0">
-            </div>
-            <div class="control-group">
-                <label for="launchAngleRange">Launch Ramp Angle (°):</label>
-                <input type="range" id="launchAngleRange" min="0" max="80" step="1" value="0">
-                <input type="number" id="launchAngleNumber" min="0" max="80" step="1" value="0">
-            </div>
-            <div class="control-group">
-                 <label id="mathModeLabel" for="mathModeCheckbox">
-                    <input type="checkbox" id="mathModeCheckbox"> Math Mode (Ideal, No Error)
-                </label>
-             </div>
+        <div class="flex flex-col lg:flex-row gap-8">
 
-            <button id="startBtn">Start Simulation</button>
-            <button id="resetBtn" title="Reset Simulation"><i class="fas fa-redo"></i></button> <!-- Reset button with icon and hover note -->
+            <!-- Left Column: Simulation Canvas -->
+            <div class="lg:w-2/3 w-full">
+                <div id="canvasContainer" class="relative bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+                    <canvas id="simCanvas"></canvas>
+                    <div id="rangeBox" class="absolute top-4 left-4 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-md border border-gray-200 text-gray-800" style="display: none;">
+                        <strong class="font-bold text-blue-600">Range:</strong>
+                        <span id="rangeVal" class="font-mono text-lg ml-2">0.00</span> m
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Controls -->
+            <div class="lg:w-1/3 w-full">
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <h2 class="text-xl font-bold mb-3 border-b pb-2 text-gray-900">Simulation Setup</h2>
+
+                    <!-- Control Groups -->
+                    <div class="space-y-2">
+                        <div class="control-group">
+                            <label for="tableHeightRange" class="flex justify-between items-center text-sm font-medium text-gray-700">
+                                <span>Table Height</span>
+                                <input type="number" id="tableHeightNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="0.5" max="2.0" step="0.05" value="1.0">
+                            </label>
+                            <input type="range" id="tableHeightRange" min="0.5" max="2.0" step="0.05" value="1.0">
+                        </div>
+
+                        <div class="control-group">
+                            <label for="rampAngleRange" class="flex justify-between items-center text-sm font-medium text-gray-700 mb-1">
+                                <span>Ramp Angle</span>
+                                <input type="number" id="rampAngleNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="10" max="60" step="1" value="30">
+                            </label>
+                            <input type="range" id="rampAngleRange" min="10" max="60" step="1" value="30">
+                        </div>
+
+                        <div class="control-group">
+                            <label for="rampHeightRange" class="flex justify-between items-center text-sm font-medium text-gray-700 mb-1">
+                                <span>Ramp Start Height</span>
+                                <input type="number" id="rampHeightNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="0.1" max="1.5" step="0.05" value="0.7">
+                            </label>
+                            <input type="range" id="rampHeightRange" min="0.1" max="1.5" step="0.05" value="0.7">
+                        </div>
+
+                        <div class="control-group">
+                            <label for="muRange" class="flex justify-between items-center text-sm font-medium text-gray-700 mb-1">
+                                <span>Table Friction (μ)</span>
+                                <input type="number" id="muNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="0" max="0.5" step="0.01" value="0.0">
+                            </label>
+                            <input type="range" id="muRange" min="0" max="0.5" step="0.01" value="0.0">
+                        </div>
+
+                        <div class="control-group">
+                            <label for="launchAngleRange" class="flex justify-between items-center text-sm font-medium text-gray-700 mb-1">
+                                <span>Launch Ramp Angle</span>
+                                <input type="number" id="launchAngleNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="0" max="80" step="1" value="0">
+                            </label>
+                            <input type="range" id="launchAngleRange" min="0" max="80" step="1" value="0">
+                        </div>
+                    </div>
+
+                    <!-- Math Mode Checkbox -->
+                    <div class="mt-4 pt-4 border-t">
+                         <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" id="mathModeCheckbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                            <span class="text-sm text-gray-700">Math Mode (Ideal, No Error)</span>
+                        </label>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-6 flex items-center space-x-3">
+                        <button id="startBtn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105">
+                            <i class="fas fa-play mr-2"></i>Start Simulation
+                        </button>
+                        <button id="resetBtn" title="Reset Simulation" class="flex-shrink-0 bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-transform transform hover:scale-105">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -176,243 +146,180 @@
         const canvas = document.getElementById("simCanvas");
         const ctx = canvas.getContext("2d");
         const scale = 150; // Pixels per meter
-        const g = 9.81;  // m/s²
+        const g = 9.81;    // m/s²
         const launchRampVisualLength = 0.2; // m
-        const maxVisualRampLength = 1.5;   // m
-        const errorMagnitude = 0.03; // +/- 3% range error in Real Mode
-        const topMargin_px = 60; // Space above the highest point (ramp top)
-
+        const maxVisualRampLength = 2.0;    // m
+        const errorMagnitude = 0.03;      // +/- 3% range error in Real Mode
+        
         // --- Get Control Elements ---
-        const tableHeightRange = document.getElementById("tableHeightRange");
-        const tableHeightNumber = document.getElementById("tableHeightNumber");
-        const rampAngleRange = document.getElementById("rampAngleRange");
-        const rampAngleNumber = document.getElementById("rampAngleNumber");
-        const rampHeightRange = document.getElementById("rampHeightRange");
-		const rampHeightNumber = document.getElementById("rampHeightNumber");
-        const muRange = document.getElementById("muRange");
-        const muNumber = document.getElementById("muNumber");
-        const launchAngleRange = document.getElementById("launchAngleRange");
-        const launchAngleNumber = document.getElementById("launchAngleNumber");
+        const controls = {
+            tableHeight: { range: document.getElementById("tableHeightRange"), number: document.getElementById("tableHeightNumber") },
+            rampAngle: { range: document.getElementById("rampAngleRange"), number: document.getElementById("rampAngleNumber") },
+            rampHeight: { range: document.getElementById("rampHeightRange"), number: document.getElementById("rampHeightNumber") },
+            mu: { range: document.getElementById("muRange"), number: document.getElementById("muNumber") },
+            launchAngle: { range: document.getElementById("launchAngleRange"), number: document.getElementById("launchAngleNumber") },
+        };
         const mathModeCheckbox = document.getElementById("mathModeCheckbox");
         const rangeVal = document.getElementById("rangeVal");
         const rangeBox = document.getElementById("rangeBox");
         const startBtn = document.getElementById("startBtn");
         const resetBtn = document.getElementById("resetBtn");
 
-
         // --- Simulation State Variables ---
         let animationId;
         let simulationRunning = false;
-        let isMathMode = false;
         let lastTime;
         let trail = [];
         let cameraOffset = 0;
 
-        let ball = {
-            radius: 0.03, x: 0, y: 0, phase: 'idle', v: 0, s_travelled: 0
-        };
-
-        // Environment/Setup Parameters
-        let tableHeight_m, rampAngleDeg, rampAngleRad, rampStartHeight_m, mu, launchAngleDeg, launchAngleRad;
-        let tableTopY_px, tableStartX_px, tableEdgeX_px, floorY_px;
-        let rampTravelDistance_m;
-        let rampBottomX_px, rampBottomY_px, rampActualTopX_px, rampActualTopY_px;
-        let launchVisualTopX_px, launchVisualTopY_px;
-
-        // Projectile State
-        let projectileStartTime, projectileInitialX_px, projectileInitialY_px, projectileVx_mps, projectileVy_mps;
-
-        // Measured Results
-        let actualTimeOfFlight = NaN;
-        let actualRange = NaN;
-
+        let ball = { radius: 0.03, x: 0, y: 0, phase: 'idle', v: 0, s_travelled: 0 };
+        let env = {}; // Environment parameters
+        let projectile = {}; // Projectile state
 
         // --- Input Synchronization ---
-        function syncInputs(rangeInput, numberInput) {
-            numberInput.value = rangeInput.value;
+        function syncInputs(source, target) {
+            target.value = source.value;
         }
-        function syncRange(rangeInput, numberInput) {
+
+        function syncRangeFromNumber(numberInput, rangeInput) {
             const val = parseFloat(numberInput.value);
+            const min = parseFloat(rangeInput.min);
+            const max = parseFloat(rangeInput.max);
             if (!isNaN(val)) {
-                const min = parseFloat(rangeInput.min);
-                const max = parseFloat(rangeInput.max);
-                if (val >= min && val <= max) {
-                    rangeInput.value = numberInput.value;
-                } else if (val < min) {
-                    numberInput.value = min;
-                    rangeInput.value = min;
-                } else {
-                    numberInput.value = max;
-                    rangeInput.value = max;
-                }
+                numberInput.value = Math.max(min, Math.min(max, val));
+                rangeInput.value = numberInput.value;
             }
         }
-        [
-            { range: tableHeightRange, number: tableHeightNumber },
-            { range: rampAngleRange, number: rampAngleNumber },
-            { range: muRange, number: muNumber },
-            { range: launchAngleRange, number: launchAngleNumber }
-        ].forEach(pair => {
+
+        Object.values(controls).forEach(pair => {
             pair.range.addEventListener("input", () => {
                 syncInputs(pair.range, pair.number);
                 if (!simulationRunning) initSimulation();
             });
             pair.number.addEventListener("input", () => {
-                syncRange(pair.range, pair.number);
+                syncRangeFromNumber(pair.number, pair.range);
                 if (!simulationRunning) initSimulation();
             });
-        });
-
-        rampHeightRange.addEventListener("input", () => {
-            syncInputs(rampHeightRange, rampHeightNumber);
-            if (!simulationRunning) initSimulation();
-        });
-
-        rampHeightNumber.addEventListener("input", () => {
-            const val = parseFloat(rampHeightNumber.value);
-            const min = parseFloat(rampHeightNumber.min);
-            const max = parseFloat(rampHeightNumber.max);
-            if (isNaN(val)) {
-                rampHeightNumber.value = min;
-            } else if (val < min) {
-                rampHeightNumber.value = min;
-            } else if (val > max) {
-                rampHeightNumber.value = max;
-            }
-            rampHeightRange.value = rampHeightNumber.value;
-            if (!simulationRunning) initSimulation();
         });
         mathModeCheckbox.addEventListener("change", () => {
             if (!simulationRunning) initSimulation();
         });
 
-
         // --- Display Update ---
-         function updateRangeDisplay() {
-             if (!isNaN(actualRange)) {
-                 rangeVal.textContent = actualRange.toFixed(2);
-                 rangeBox.style.display = "block";
-             } else {
-                 rangeBox.style.display = "none";
-             }
-         }
-
-
-        // --- Drawing Functions ---
+        function updateRangeDisplay() {
+            if (!isNaN(env.actualRange)) {
+                rangeVal.textContent = env.actualRange.toFixed(2);
+                rangeBox.style.display = "block";
+            } else {
+                rangeBox.style.display = "none";
+            }
+        }
+        
+        // --- Drawing Functions (Enhanced for better visuals) ---
         function drawSky() {
-             ctx.fillStyle = "#e6f7ff";
-             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, env.floorY_px);
+            skyGradient.addColorStop(0, '#87CEEB'); // SkyBlue
+            skyGradient.addColorStop(1, '#E0F2FE'); // light-sky-100
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, canvas.width, env.floorY_px);
         }
 
         function drawGround() {
-            const leftExtent  = -canvas.width * 2;
-            const rightExtent =  canvas.width * 3;
-            const groundWidth = rightExtent - leftExtent;
-
-            ctx.fillStyle = "#90EE90";
-            ctx.fillRect(leftExtent, floorY_px, groundWidth, canvas.height - floorY_px + 50);
-
-            ctx.strokeStyle = "#556B2F";
+            const groundWidth = canvas.width * 4;
+            const groundX = -canvas.width * 1.5;
+            ctx.fillStyle = "#A7D397"; // A soft green
+            ctx.fillRect(groundX, env.floorY_px, groundWidth, canvas.height - env.floorY_px + 50);
+            ctx.strokeStyle = "#556B2F"; // DarkOliveGreen
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(leftExtent,  floorY_px);
-            ctx.lineTo(rightExtent, floorY_px);
+            ctx.moveTo(groundX, env.floorY_px);
+            ctx.lineTo(groundX + groundWidth, env.floorY_px);
             ctx.stroke();
         }
 
-
         function drawTable() {
-             // Draw table surface
-             let tableGradient = ctx.createLinearGradient(0, tableTopY_px, 0, tableTopY_px + 20);
-             tableGradient.addColorStop(0, "#CD853F"); // Peru
-             tableGradient.addColorStop(1, "#A0522D"); // Sienna
-             ctx.fillStyle = tableGradient;
-             ctx.fillRect(tableStartX_px, tableTopY_px, tableEdgeX_px - tableStartX_px, 20); // Table thickness 20px
+            const tableThickness = 20;
+            const tableGradient = ctx.createLinearGradient(0, env.tableTopY_px, 0, env.tableTopY_px + tableThickness);
+            tableGradient.addColorStop(0, "#D2B48C"); // Tan
+            tableGradient.addColorStop(1, "#A0522D"); // Sienna
+            ctx.fillStyle = tableGradient;
+            ctx.fillRect(env.tableStartX_px, env.tableTopY_px, env.tableEdgeX_px - env.tableStartX_px, tableThickness);
 
-              // Draw table legs / front face down to floor
-             ctx.fillStyle = "#A0522D"; // Sienna
-             ctx.fillRect(tableStartX_px, tableTopY_px + 20, tableEdgeX_px - tableStartX_px, floorY_px - (tableTopY_px + 20));
-
-             // Add a subtle border to the table top for definition
-             ctx.strokeStyle = "#8B4513"; /* SaddleBrown */
-             ctx.lineWidth = 1;
-             ctx.strokeRect(tableStartX_px, tableTopY_px, tableEdgeX_px - tableStartX_px, 20);
-
-             // Draw table edge line clearly down to floor
-             ctx.strokeStyle = "#000000";
-             ctx.lineWidth = 2;
-             ctx.beginPath();
-             ctx.moveTo(tableEdgeX_px, tableTopY_px); // Start at top surface edge
-             ctx.lineTo(tableEdgeX_px, floorY_px);   // Go down to floor level
-             ctx.stroke();
+            ctx.fillStyle = "#A0522D"; // Sienna for the front face
+            ctx.fillRect(env.tableStartX_px, env.tableTopY_px + tableThickness, env.tableEdgeX_px - env.tableStartX_px, env.floorY_px - (env.tableTopY_px + tableThickness));
+            
+            ctx.strokeStyle = "#8B4513"; // SaddleBrown
+            ctx.lineWidth = 1;
+            ctx.strokeRect(env.tableStartX_px, env.tableTopY_px, env.tableEdgeX_px - env.tableStartX_px, tableThickness);
+            
+            ctx.strokeStyle = "#333";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(env.tableEdgeX_px, env.tableTopY_px);
+            ctx.lineTo(env.tableEdgeX_px, env.floorY_px);
+            ctx.stroke();
         }
 
         function drawRamp() {
-             // Draw the actual ramp track the ball uses
-            ctx.strokeStyle = "#607D8B"; // Blue Grey
-            ctx.lineWidth = 5;
-             ctx.lineCap = "round";
+            ctx.strokeStyle = "#475569"; // slate-600
+            ctx.lineWidth = 6;
+            ctx.lineCap = "round";
             ctx.beginPath();
-            ctx.moveTo(rampActualTopX_px, rampActualTopY_px);
-            ctx.lineTo(rampBottomX_px, rampBottomY_px);
+            ctx.moveTo(env.rampActualTopX_px, env.rampActualTopY_px);
+            ctx.lineTo(env.rampBottomX_px, env.rampBottomY_px);
             ctx.stroke();
         }
 
         function drawLaunchRampVisual() {
-             // Draw VISUAL launch ramp (dashed line)
-             if (launchAngleDeg > 0) {
-                ctx.strokeStyle = "#FF69B4"; // Hot Pink
+            if (env.launchAngleDeg > 0) {
+                ctx.strokeStyle = "rgba(236, 72, 153, 0.8)"; // pink-500 with alpha
                 ctx.lineWidth = 3;
-                ctx.setLineDash([5, 5]);
+                ctx.setLineDash([6, 6]);
                 ctx.beginPath();
-                ctx.moveTo(tableEdgeX_px, tableTopY_px);
-                ctx.lineTo(launchVisualTopX_px, launchVisualTopY_px);
+                ctx.moveTo(env.tableEdgeX_px, env.tableTopY_px);
+                ctx.lineTo(env.launchVisualTopX_px, env.launchVisualTopY_px);
                 ctx.stroke();
                 ctx.setLineDash([]);
-             }
+            }
         }
 
         function drawBallItself(x_px, y_px) {
+            // Check if coordinates are finite before drawing
+            if (!isFinite(x_px) || !isFinite(y_px)) {
+                console.error("Invalid ball coordinates for drawing:", x_px, y_px);
+                return;
+            }
+            const gradient = ctx.createRadialGradient(x_px - 3, y_px - 3, 2, x_px, y_px, ball.radius * scale);
+            gradient.addColorStop(0, "#FF8A80"); // Lighter red
+            gradient.addColorStop(1, "#D32F2F"); // Darker red
+            ctx.fillStyle = gradient;
             ctx.beginPath();
-            ctx.fillStyle = "#FF4136";
             ctx.arc(x_px, y_px, ball.radius * scale, 0, 2 * Math.PI);
             ctx.fill();
-            ctx.strokeStyle = "#A00000";
-            ctx.lineWidth = 1;
-            ctx.stroke();
         }
 
         function drawShadow(ballX_px, ballY_px) {
-            const heightAboveGround_px = Math.max(0, floorY_px - ballY_px - ball.radius*scale);
-            const maxShadowDistance = (tableHeight_m + 0.5) * scale;
-
-            if (heightAboveGround_px < maxShadowDistance) {
-                const shadowFactor = Math.max(0.1, 1 - (heightAboveGround_px / maxShadowDistance));
-                const sizeFactor = Math.max(0.3, 1 - 0.5 * (heightAboveGround_px / maxShadowDistance));
-
+            const heightAboveGround_px = Math.max(0, env.floorY_px - ballY_px - ball.radius * scale);
+            const totalFallHeight = env.tableHeight_m * scale;
+            if (heightAboveGround_px < totalFallHeight * 1.5) {
+                const shadowFactor = 1 - (heightAboveGround_px / (totalFallHeight * 1.5));
+                const sizeFactor = 1 - 0.6 * (heightAboveGround_px / (totalFallHeight * 1.5));
                 ctx.beginPath();
-                ctx.fillStyle = `rgba(0, 0, 0, ${0.4 * shadowFactor})`;
-                ctx.ellipse(
-                    ballX_px + 5,
-                    floorY_px,
-                    ball.radius * scale * 1.1 * sizeFactor,
-                    ball.radius * scale * 0.4 * sizeFactor,
-                    0, 0, 2 * Math.PI);
+                ctx.fillStyle = `rgba(0, 0, 0, ${0.25 * shadowFactor})`;
+                ctx.ellipse(ballX_px + 5, env.floorY_px, ball.radius * scale * 1.1 * sizeFactor, ball.radius * scale * 0.4 * sizeFactor, 0, 0, 2 * Math.PI);
                 ctx.fill();
             }
         }
 
-
         function drawTrail() {
             trail.forEach((pos, i) => {
-                let alpha = 0.4 * (i / trail.length);
+                let alpha = 0.5 * (i / trail.length);
                 ctx.beginPath();
-                ctx.fillStyle = `rgba(255, 65, 54, ${alpha})`;
-                ctx.arc(pos.x, pos.y, ball.radius * scale * (0.4 + 0.6 * (i / trail.length)), 0, 2 * Math.PI);
+                ctx.fillStyle = `rgba(211, 47, 47, ${alpha})`; // Red-700
+                ctx.arc(pos.x, pos.y, ball.radius * scale * (0.3 + 0.7 * (i / trail.length)), 0, 2 * Math.PI);
                 ctx.fill();
             });
         }
-
 
         // --- Initialization ---
         function initSimulation() {
@@ -420,61 +327,59 @@
             simulationRunning = false;
             cameraOffset = 0;
             trail = [];
-            actualTimeOfFlight = NaN;
-            actualRange = NaN;
+            env.actualRange = NaN;
             ball.phase = 'idle';
 
             // Get input values
-            tableHeight_m = parseFloat(tableHeightNumber.value);
-            rampAngleDeg = parseFloat(rampAngleNumber.value);
-            rampAngleRad = rampAngleDeg * Math.PI / 180;
-            rampStartHeight_m = parseFloat(rampHeightNumber.value);
-            mu = parseFloat(muNumber.value);
-            launchAngleDeg = parseFloat(launchAngleNumber.value);
-            launchAngleRad = launchAngleDeg * Math.PI / 180;
-            isMathMode = mathModeCheckbox.checked;
+            env.tableHeight_m = parseFloat(controls.tableHeight.number.value);
+            env.rampAngleDeg = parseFloat(controls.rampAngle.number.value);
+            env.rampAngleRad = env.rampAngleDeg * Math.PI / 180;
+            env.rampStartHeight_m = parseFloat(controls.rampHeight.number.value);
+            env.mu = parseFloat(controls.mu.number.value);
+            env.launchAngleDeg = parseFloat(controls.launchAngle.number.value);
+            env.launchAngleRad = env.launchAngleDeg * Math.PI / 180;
+            env.isMathMode = mathModeCheckbox.checked;
 
-            // --- Geometric calculations (Revised for better layout) ---
-            // Define floor and table top based on top margin
-            tableTopY_px = topMargin_px + rampStartHeight_m * scale;
-            floorY_px = tableTopY_px + tableHeight_m * scale;
+            // --- CRITICAL: DYNAMIC CANVAS SIZING ---
+            // Calculate required height in meters and add buffer
+            const totalHeight_m = env.tableHeight_m + env.rampStartHeight_m + 0.5; // Added vertical buffer
+            canvas.height = totalHeight_m * scale;
+            
+            // Set canvas width based on container
+            const container = document.getElementById('canvasContainer');
+            canvas.width = container.offsetWidth;
 
-            // Ensure canvas is tall enough, add buffer
-             if (floorY_px + 50 > canvas.height) {
-                 console.warn("Canvas might be too short for the chosen heights.");
-             }
+            // --- Geometric calculations (from bottom-up) ---
+            const floorBuffer_px = 50;
+            env.floorY_px = canvas.height - floorBuffer_px;
+            env.tableTopY_px = env.floorY_px - env.tableHeight_m * scale;
+            env.tableEdgeX_px = canvas.width * 0.4;
+            env.tableStartX_px = canvas.width * 0.1;
 
-            tableEdgeX_px = canvas.width * 0.5;
-            tableStartX_px = canvas.width * 0.1;
+            // Calculate ramp geometry
+            if (Math.sin(env.rampAngleRad) < 1e-6) env.rampAngleRad = 10 * Math.PI / 180;
+            env.rampTravelDistance_m = env.rampStartHeight_m / Math.sin(env.rampAngleRad);
+            env.rampTravelDistance_m = Math.min(env.rampTravelDistance_m, maxVisualRampLength);
+            
+            env.rampBottomY_px = env.tableTopY_px;
+            env.rampBottomX_px = env.tableStartX_px + 50;
+            env.rampActualTopX_px = env.rampBottomX_px - env.rampTravelDistance_m * Math.cos(env.rampAngleRad) * scale;
+            env.rampActualTopY_px = env.rampBottomY_px - env.rampTravelDistance_m * Math.sin(env.rampAngleRad) * scale;
 
+            // Visual launch ramp
+            env.launchVisualTopX_px = env.tableEdgeX_px + launchRampVisualLength * scale * Math.cos(env.launchAngleRad);
+            env.launchVisualTopY_px = env.tableTopY_px - launchRampVisualLength * scale * Math.sin(env.launchAngleRad);
 
-            // Calculate ramp geometry based on start height
-            if (Math.sin(rampAngleRad) < 1e-6) rampAngleRad = 10 * Math.PI/180;
-            rampTravelDistance_m = rampStartHeight_m / Math.sin(rampAngleRad);
-            rampTravelDistance_m = Math.min(rampTravelDistance_m, maxVisualRampLength);
-            rampStartHeight_m = rampTravelDistance_m * Math.sin(rampAngleRad);
-
-            // Ramp bottom connects to table visually, adjust Y to match tableTopY_px
-            rampBottomY_px = tableTopY_px;
-            rampBottomX_px = tableStartX_px + 50;
-            // Calculate ramp top based on bottom position and travel distance/angle
-            rampActualTopX_px = rampBottomX_px - rampTravelDistance_m * Math.cos(rampAngleRad) * scale;
-            rampActualTopY_px = rampBottomY_px - rampTravelDistance_m * Math.sin(rampAngleRad) * scale;
-
-
-            // Visual launch ramp end point
-            launchVisualTopX_px = tableEdgeX_px + launchRampVisualLength * scale * Math.cos(launchAngleRad);
-            launchVisualTopY_px = tableTopY_px - launchRampVisualLength * scale * Math.sin(launchAngleRad);
-
-            // Set ball starting position on the ramp
-            ball.x = rampActualTopX_px;
-            ball.y = rampActualTopY_px;
+            // Set ball start position
+            ball.x = env.rampActualTopX_px;
+            ball.y = env.rampActualTopY_px;
             ball.v = 0;
             ball.s_travelled = 0;
             ball.phase = 'ramp';
 
+            // Set initial camera
             const leftMargin = 60;
-            const leftMostX  = Math.min(rampActualTopX_px, rampBottomX_px);
+            const leftMostX = Math.min(env.rampActualTopX_px, env.rampBottomX_px);
             cameraOffset = Math.min(0, leftMostX - leftMargin);
 
             updateRangeDisplay();
@@ -487,10 +392,9 @@
             drawSky();
             ctx.save();
             ctx.translate(-cameraOffset, 0);
-
             drawGround();
-            drawRamp();         // Draw ramp BEFORE table
-            drawTable();        // Draw table AFTER ramp to avoid clipping
+            drawRamp();
+            drawTable();
             drawLaunchRampVisual();
             drawBallItself(ball.x, ball.y);
             ctx.restore();
@@ -499,120 +403,113 @@
         // --- Main Update Loop ---
         function update(timestamp) {
             if (!simulationRunning) return;
-
             if (!lastTime) lastTime = timestamp;
-            const dt = Math.min((timestamp - lastTime) / 1000, 0.03);
+            const dt = Math.min((timestamp - lastTime) / 1000, 0.03); // Cap dt
             lastTime = timestamp;
 
+            // State machine for ball phases
             if (ball.phase === 'ramp') {
-                 const a = (5/7) * g * Math.sin(rampAngleRad);
-                 let deltaS = ball.v * dt + 0.5 * a * dt * dt;
-                 ball.v += a * dt;
-                 ball.s_travelled += deltaS;
+                const a = (5 / 7) * g * Math.sin(env.rampAngleRad); // Rolling without slipping
+                let deltaS = ball.v * dt + 0.5 * a * dt * dt;
+                ball.v += a * dt;
+                ball.s_travelled += deltaS;
 
-                 if (ball.s_travelled >= rampTravelDistance_m) {
-                     ball.s_travelled = rampTravelDistance_m;
-                     let v_bottom = Math.sqrt(2 * a * ball.s_travelled);
-                     ball.v = v_bottom > 0 ? v_bottom : 0;
-                     ball.phase = 'table';
-                     ball.x = rampBottomX_px;
-                     ball.y = tableTopY_px - ball.radius * scale;
-                     trail = [];
-                 } else {
-                     ball.x = rampActualTopX_px + ball.s_travelled * Math.cos(rampAngleRad) * scale;
-                     ball.y = rampActualTopY_px + ball.s_travelled * Math.sin(rampAngleRad) * scale;
-                 }
-
+                if (ball.s_travelled >= env.rampTravelDistance_m) {
+                    ball.s_travelled = env.rampTravelDistance_m;
+                    ball.v = Math.sqrt(2 * a * ball.s_travelled);
+                    ball.phase = 'table';
+                    ball.x = env.rampBottomX_px;
+                    ball.y = env.tableTopY_px - ball.radius * scale;
+                    trail = [];
+                } else {
+                    ball.x = env.rampActualTopX_px + ball.s_travelled * Math.cos(env.rampAngleRad) * scale;
+                    ball.y = env.rampActualTopY_px + ball.s_travelled * Math.sin(env.rampAngleRad) * scale;
+                }
             } else if (ball.phase === 'table') {
-                 const a = -mu * g;
-                 let dx_m = ball.v * dt + 0.5 * a * dt * dt;
-                 let next_v = Math.max(0, ball.v + a * dt);
-                 let next_x_px = ball.x + dx_m * scale;
+                const a = -env.mu * g;
+                let next_x_px = ball.x + (ball.v * dt + 0.5 * a * dt * dt) * scale;
+                let next_v = Math.max(0, ball.v + a * dt);
 
-                 if (next_x_px >= tableEdgeX_px) {
-                     let dist_to_edge_px = tableEdgeX_px - ball.x;
-                     let t_to_edge = (ball.v > 0) ? (dist_to_edge_px / scale) / ball.v : 0;
-                     t_to_edge = Math.max(0, t_to_edge);
+                if (next_x_px >= env.tableEdgeX_px) {
+                    const dist_to_edge_m = (env.tableEdgeX_px - ball.x) / scale;
+                    
+                    // FIX: Calculate time to edge, handling the zero-acceleration case to prevent division by zero.
+                    let time_to_edge;
+                    if (Math.abs(a) < 1e-9) { // Case for zero friction (a=0)
+                        time_to_edge = (ball.v > 0) ? dist_to_edge_m / ball.v : 0;
+                    } else { // Case with friction
+                        const discriminant = ball.v * ball.v + 2 * a * dist_to_edge_m;
+                        // Ensure discriminant is non-negative to avoid NaN from sqrt
+                        time_to_edge = (discriminant >= 0) ? (-ball.v + Math.sqrt(discriminant)) / a : 0;
+                    }
+                    
+                    ball.v = Math.max(0, ball.v + a * time_to_edge);
+                    
+                    ball.phase = 'projectile';
+                    ball.x = env.tableEdgeX_px;
+                    ball.y = env.tableTopY_px - ball.radius * scale;
 
-                     ball.v = Math.max(0, ball.v + a * t_to_edge);
-
-                     ball.phase = 'projectile';
-                     ball.x = tableEdgeX_px;
-                     ball.y = tableTopY_px - ball.radius * scale;
-
-                     let vLeaving_actual = ball.v;
-                     projectileVx_mps = vLeaving_actual * Math.cos(launchAngleRad);
-                     projectileVy_mps = vLeaving_actual * Math.sin(launchAngleRad);
-
-                     projectileInitialX_px = ball.x;
-                     projectileInitialY_px = ball.y;
-                     projectileStartTime = timestamp - Math.max(0, dt - t_to_edge) * 1000;
-
-                     trail = [];
-                 } else {
-                     ball.v = next_v;
-                     ball.x = next_x_px;
-                     ball.y = tableTopY_px - ball.radius * scale;
-                 }
-
+                    projectile.vx_mps = ball.v * Math.cos(env.launchAngleRad);
+                    projectile.vy_mps = ball.v * Math.sin(env.launchAngleRad);
+                    projectile.initialX_px = ball.x;
+                    projectile.initialY_px = ball.y;
+                    // FIX: Set a more accurate start time for the projectile motion.
+                    // The projectile motion begins 'time_to_edge' seconds after the start of this frame ('lastTime').
+                    projectile.startTime = lastTime + time_to_edge * 1000;
+                    trail = [];
+                } else {
+                    ball.v = next_v;
+                    ball.x = next_x_px;
+                    ball.y = env.tableTopY_px - ball.radius * scale;
+                }
             } else if (ball.phase === 'projectile') {
-                const t = (timestamp - projectileStartTime) / 1000;
+                const t = (timestamp - projectile.startTime) / 1000;
+                ball.x = projectile.initialX_px + projectile.vx_mps * t * scale;
+                let deltaY_meters = projectile.vy_mps * t - 0.5 * g * t * t;
+                ball.y = projectile.initialY_px - deltaY_meters * scale;
 
-                ball.x = projectileInitialX_px + projectileVx_mps * t * scale;
-                let deltaY_meters = projectileVy_mps * t - 0.5 * g * t * t;
-                ball.y = projectileInitialY_px - deltaY_meters * scale;
-
-                if (ball.y + ball.radius * scale >= floorY_px) {
-                    ball.y = floorY_px - ball.radius * scale;
+                if (ball.y + ball.radius * scale >= env.floorY_px) {
+                    ball.y = env.floorY_px - ball.radius * scale;
                     ball.phase = 'landed';
                     simulationRunning = false;
                     cancelAnimationFrame(animationId);
 
-                    actualTimeOfFlight = (timestamp - projectileStartTime) / 1000;
-                    actualRange = (ball.x - projectileInitialX_px) / scale;
-
-                    if (!isMathMode) {
+                    env.actualRange = (ball.x - projectile.initialX_px) / scale;
+                    if (!env.isMathMode) {
                         let errorFactor = 1 + (Math.random() * 2 - 1) * errorMagnitude;
-                        actualRange *= errorFactor;
-                        actualRange = Math.max(0, actualRange);
+                        env.actualRange *= errorFactor;
                     }
+                    env.actualRange = Math.max(0, env.actualRange);
                     updateRangeDisplay();
                 }
-            } else if (ball.phase === 'landed') {
-                 // Do nothing
             }
 
-            // --- Panning ---
-             const relativeX = ball.x - cameraOffset;
-             const followThresholdRight = canvas.width * 0.55;
-             const followThresholdLeft = canvas.width * 0.25;
-             if (relativeX > followThresholdRight) { cameraOffset += (relativeX - followThresholdRight) * 0.1; }
-             else if (relativeX < followThresholdLeft && cameraOffset > 0) { cameraOffset += (relativeX - followThresholdLeft) * 0.1; cameraOffset = Math.max(0, cameraOffset); }
-
+            // --- Panning Camera ---
+            const relativeX = ball.x - cameraOffset;
+            const followThresholdRight = canvas.width * 0.6;
+            const followThresholdLeft = canvas.width * 0.3;
+            if (relativeX > followThresholdRight) {
+                cameraOffset += (relativeX - followThresholdRight) * 0.1;
+            } else if (relativeX < followThresholdLeft) {
+                cameraOffset += (relativeX - followThresholdLeft) * 0.1;
+                cameraOffset = Math.max(0, cameraOffset);
+            }
 
             // --- Drawing ---
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawSky();
+            drawStaticFrame(); // Redraws background and static elements
             ctx.save();
             ctx.translate(-cameraOffset, 0);
-
-            drawGround();
-            drawRamp();         // Draw ramp BEFORE table
-            drawTable();        // Draw table AFTER ramp to avoid clipping
-            drawLaunchRampVisual();
-
-             if (ball.phase === 'ramp' || ball.phase === 'table' || ball.phase === 'projectile') {
-                 trail.push({ x: ball.x, y: ball.y });
-                 if (trail.length > 15) trail.shift();
-             }
-             drawTrail();
-
-             if (ball.phase === 'projectile') {
-                 drawShadow(ball.x, ball.y);
-             }
-             drawBallItself(ball.x, ball.y);
-
-
+            
+            if (['ramp', 'table', 'projectile'].includes(ball.phase)) {
+                trail.push({ x: ball.x, y: ball.y });
+                if (trail.length > 20) trail.shift();
+            }
+            drawTrail();
+            if (ball.phase === 'projectile') {
+                drawShadow(ball.x, ball.y);
+            }
+            drawBallItself(ball.x, ball.y);
+            
             ctx.restore();
 
             if (simulationRunning) {
@@ -621,26 +518,23 @@
         }
 
         // --- Event Listeners ---
-        startBtn.addEventListener("click", () => { if (simulationRunning) return; initSimulation(); simulationRunning = true; lastTime = null; animationId = requestAnimationFrame(update); });
-        resetBtn.addEventListener("click", () => { cancelAnimationFrame(animationId); simulationRunning = false; lastTime = null; initSimulation(); });
-
-        // --- Initial Load ---
-        initSimulation();
-
-        // Handle window resize to adjust canvas dimensions
-        function resizeCanvas() {
-            const container = document.getElementById('canvasContainer');
-            const containerWidth = container.offsetWidth;
-            const containerHeight = container.offsetHeight;
-
-            canvas.width = containerWidth;
-            canvas.height = containerHeight;
-
+        startBtn.addEventListener("click", () => {
+            if (simulationRunning) return;
             initSimulation();
-        }
+            simulationRunning = true;
+            lastTime = null;
+            animationId = requestAnimationFrame(update);
+        });
+        resetBtn.addEventListener("click", () => {
+            cancelAnimationFrame(animationId);
+            simulationRunning = false;
+            lastTime = null;
+            initSimulation();
+        });
 
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        // --- Initial Load & Resize Handling ---
+        window.addEventListener('resize', initSimulation);
+        window.onload = initSimulation;
 
     </script>
 </body>
