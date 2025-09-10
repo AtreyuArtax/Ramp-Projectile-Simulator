@@ -4,6 +4,8 @@ This is an interactive HTML5/JavaScript simulation for a ramp and projectile lab
 It visually models the motion of a ball rolling down a ramp, crossing a table (with adjustable friction), and launching as a projectile.  
 The simulation can be used for physics labs to explore concepts such as kinematics, dynamics, and projectile motion.
 
+Try it live 🔗 https://atreyuartax.github.io/Ramp-Projectile-Simulator/
+
 ## Features
 
 - **Adjustable Parameters**:

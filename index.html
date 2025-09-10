@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramp and Projectile Lab Simulation</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom font and base styling */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Style for range inputs to match the theme */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #d1d5db; /* gray-300 */
+            border-radius: 9999px;
+            outline: none;
+            opacity: 0.9;
+            transition: opacity .2s;
+        }
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6; /* blue-500 */
+            cursor: pointer;
+            border-radius: 9999px;
+            border: 2px solid white;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6; /* blue-500 */
+            cursor: pointer;
+            border-radius: 9999px;
+            border: 2px solid white;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-2 md:p-4">
+        <header class="text-center mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Ramp Projectile Simulation</h1>
+        </header>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+
+            <!-- Left Column: Simulation Canvas -->
+            <div class="lg:w-2/3 w-full">
+                <div id="canvasContainer" class="relative bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+                    <canvas id="simCanvas"></canvas>
+                    <div id="rangeBox" class="absolute top-4 left-4 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-md border border-gray-200 text-gray-800" style="display: none;">
+                        <strong class="font-bold text-blue-600">Range:</strong>
+                        <span id="rangeVal" class="font-mono text-lg ml-2">0.00</span> m
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Controls -->
+            <div class="lg:w-1/3 w-full">
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <h2 class="text-xl font-bold mb-3 border-b pb-2 text-gray-900">Simulation Setup</h2>
+
+                    <!-- Control Groups -->
+                    <div class="space-y-2">
+                        <div class="control-group">
+                            <label for="tableHeightRange" class="flex justify-between items-center text-sm font-medium text-gray-700">
+                                <span>Table Height (m)</span>
+                                <input type="number" id="tableHeightNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="0.5" max="2.0" step="0.05" value="1.0">
+                            </label>
+                            <input type="range" id="tableHeightRange" min="0.5" max="2.0" step="0.05" value="1.0">
+                        </div>
+
+                        <div class="control-group">
+                            <label for="rampAngleRange" class="flex justify-between items-center text-sm font-medium text-gray-700 mb-1">
+                                <span>Ramp Angle (&deg;)</span>
+                                <input type="number" id="rampAngleNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="10" max="60" step="1" value="30">
+                            </label>
+                            <input type="range" id="rampAngleRange" min="10" max="60" step="1" value="30">
+                        </div>
+
+                        <div class="control-group">
+                            <label for="rampHeightRange" class="flex justify-between items-center text-sm font-medium text-gray-700 mb-1">
+                                <span>Ramp Start Height (m)</span>
+                                <input type="number" id="rampHeightNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="0.1" max="1.5" step="0.05" value="0.7">
+                            </label>
+                            <input type="range" id="rampHeightRange" min="0.1" max="1.5" step="0.05" value="0.7">
+                        </div>
+
+                        <div class="control-group">
+                            <label for="muRange" class="flex justify-between items-center text-sm font-medium text-gray-700 mb-1">
+                                <span>Table Friction (μ)</span>
+                                <input type="number" id="muNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="0" max="0.5" step="0.01" value="0.0">
+                            </label>
+                            <input type="range" id="muRange" min="0" max="0.5" step="0.01" value="0.0">
+                        </div>
+
+                        <div class="control-group">
+                            <label for="launchAngleRange" class="flex justify-between items-center text-sm font-medium text-gray-700 mb-1">
+                                <span>Launch Ramp Angle (&deg;)</span>
+                                <input type="number" id="launchAngleNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="0" max="80" step="1" value="0">
+                            </label>
+                            <input type="range" id="launchAngleRange" min="0" max="80" step="1" value="0">
+                        </div>
+                    </div>
+
+                    <!-- Math Mode Checkbox -->
+                    <div class="mt-4 pt-4 border-t">
+                         <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" id="mathModeCheckbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                            <span class="text-sm text-gray-700">Math Mode (Ideal, No Error)</span>
+                        </label>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-6 flex items-center space-x-3">
+                        <button id="startBtn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105">
+                            <i class="fas fa-play mr-2"></i>Start Simulation
+                        </button>
+                        <button id="resetBtn" title="Reset Simulation" class="flex-shrink-0 bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-transform transform hover:scale-105">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Constants and Setup ---
+        const canvas = document.getElementById("simCanvas");
+        const ctx = canvas.getContext("2d");
+        const scale = 150; // Pixels per meter
+        const g = 9.81;    // m/s²
+        const launchRampVisualLength = 0.2; // m
+        // const maxVisualRampLength = 2.0;    // m -- This constant has been removed for physical accuracy
+        const errorMagnitude = 0.03;      // +/- 3% range error in Real Mode
+        const canvasFixedHeight = 530; // Fixed canvas height in pixels
+
+        // --- Get Control Elements ---
+        const controls = {
+            tableHeight: { range: document.getElementById("tableHeightRange"), number: document.getElementById("tableHeightNumber") },
+            rampAngle: { range: document.getElementById("rampAngleRange"), number: document.getElementById("rampAngleNumber") },
+            rampHeight: { range: document.getElementById("rampHeightRange"), number: document.getElementById("rampHeightNumber") },
+            mu: { range: document.getElementById("muRange"), number: document.getElementById("muNumber") },
+            launchAngle: { range: document.getElementById("launchAngleRange"), number: document.getElementById("launchAngleNumber") },
+        };
+        const mathModeCheckbox = document.getElementById("mathModeCheckbox");
+        const rangeVal = document.getElementById("rangeVal");
+        const rangeBox = document.getElementById("rangeBox");
+        const startBtn = document.getElementById("startBtn");
+        const resetBtn = document.getElementById("resetBtn");
+
+        // --- Simulation State Variables ---
+        let animationId;
+        let simulationRunning = false;
+        let lastTime;
+        let trail = [];
+        let cameraOffset = 0;
+
+        let ball = { radius: 0.03, x: 0, y: 0, phase: 'idle', v: 0, s_travelled: 0 };
+        let env = {}; // Environment parameters
+        let projectile = {}; // Projectile state
+
+        // --- Input Synchronization ---
+        function syncInputs(source, target) {
+            target.value = source.value;
+        }
+
+        function syncRangeFromNumber(numberInput, rangeInput) {
+            const val = parseFloat(numberInput.value);
+            const min = parseFloat(rangeInput.min);
+            const max = parseFloat(rangeInput.max);
+            if (!isNaN(val)) {
+                numberInput.value = Math.max(min, Math.min(max, val));
+                rangeInput.value = numberInput.value;
+            }
+        }
+
+        Object.values(controls).forEach(pair => {
+            pair.range.addEventListener("input", () => {
+                syncInputs(pair.range, pair.number);
+                if (!simulationRunning) updateSimulation();
+            });
+            pair.number.addEventListener("input", () => {
+                syncRangeFromNumber(pair.number, pair.range);
+                if (!simulationRunning) updateSimulation();
+            });
+        });
+        mathModeCheckbox.addEventListener("change", () => {
+            if (!simulationRunning) updateSimulation();
+        });
+
+        // --- Display Update ---
+        function updateRangeDisplay() {
+            if (!isNaN(env.actualRange)) {
+                rangeVal.textContent = env.actualRange.toFixed(2);
+                rangeBox.style.display = "block";
+            } else {
+                rangeBox.style.display = "none";
+            }
+        }
+        
+        // --- Drawing Functions (Enhanced for better visuals) ---
+        function drawSky() {
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, env.floorY_px);
+            skyGradient.addColorStop(0, '#87CEEB'); // SkyBlue
+            skyGradient.addColorStop(1, '#E0F2FE'); // light-sky-100
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, canvas.width, env.floorY_px);
+        }
+
+        function drawGround() {
+            const groundWidth = canvas.width * 4;
+            const groundX = -canvas.width * 1.5;
+            ctx.fillStyle = "#A7D397"; // A soft green
+            ctx.fillRect(groundX, env.floorY_px, groundWidth, canvas.height - env.floorY_px + 50);
+            ctx.strokeStyle = "#556B2F"; // DarkOliveGreen
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(groundX, env.floorY_px);
+            ctx.lineTo(groundX + groundWidth, env.floorY_px);
+            ctx.stroke();
+        }
+
+        function drawTable() {
+            const tableThickness = 20;
+            const tableGradient = ctx.createLinearGradient(0, env.tableTopY_px, 0, env.tableTopY_px + tableThickness);
+            tableGradient.addColorStop(0, "#D2B48C"); // Tan
+            tableGradient.addColorStop(1, "#A0522D"); // Sienna
+            ctx.fillStyle = tableGradient;
+            ctx.fillRect(env.tableStartX_px, env.tableTopY_px, env.tableEdgeX_px - env.tableStartX_px, tableThickness);
+
+            ctx.fillStyle = "#A0522D"; // Sienna for the front face
+            ctx.fillRect(env.tableStartX_px, env.tableTopY_px + tableThickness, env.tableEdgeX_px - env.tableStartX_px, env.floorY_px - (env.tableTopY_px + tableThickness));
+            
+            ctx.strokeStyle = "#8B4513"; // SaddleBrown
+            ctx.lineWidth = 1;
+            ctx.strokeRect(env.tableStartX_px, env.tableTopY_px, env.tableEdgeX_px - env.tableStartX_px, tableThickness);
+            
+            ctx.strokeStyle = "#333";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(env.tableEdgeX_px, env.tableTopY_px);
+            ctx.lineTo(env.tableEdgeX_px, env.floorY_px);
+            ctx.stroke();
+        }
+
+        function drawRamp() {
+            ctx.strokeStyle = "#475569"; // slate-600
+            ctx.lineWidth = 6;
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(env.rampActualTopX_px, env.rampActualTopY_px);
+            ctx.lineTo(env.rampBottomX_px, env.rampBottomY_px);
+            ctx.stroke();
+        }
+
+        function drawLaunchRampVisual() {
+            if (env.launchAngleDeg > 0) {
+                ctx.strokeStyle = "rgba(236, 72, 153, 0.8)"; // pink-500 with alpha
+                ctx.lineWidth = 3;
+                ctx.setLineDash([6, 6]);
+                ctx.beginPath();
+                ctx.moveTo(env.tableEdgeX_px, env.tableTopY_px);
+                ctx.lineTo(env.launchVisualTopX_px, env.launchVisualTopY_px);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        function drawBallItself(x_px, y_px) {
+            // Check if coordinates are finite before drawing
+            if (!isFinite(x_px) || !isFinite(y_px)) {
+                console.error("Invalid ball coordinates for drawing:", x_px, y_px);
+                return;
+            }
+            const gradient = ctx.createRadialGradient(x_px - 3, y_px - 3, 2, x_px, y_px, ball.radius * scale);
+            gradient.addColorStop(0, "#FF8A80"); // Lighter red
+            gradient.addColorStop(1, "#D32F2F"); // Darker red
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(x_px, y_px, ball.radius * scale, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        function drawShadow(ballX_px, ballY_px) {
+            const heightAboveGround_px = Math.max(0, env.floorY_px - ballY_px - ball.radius * scale);
+            const totalFallHeight = env.tableHeight_m * scale;
+            if (heightAboveGround_px < totalFallHeight * 1.5) {
+                const shadowFactor = 1 - (heightAboveGround_px / (totalFallHeight * 1.5));
+                const sizeFactor = 1 - 0.6 * (heightAboveGround_px / (totalFallHeight * 1.5));
+                ctx.beginPath();
+                ctx.fillStyle = `rgba(0, 0, 0, ${0.25 * shadowFactor})`;
+                ctx.ellipse(ballX_px + 5, env.floorY_px, ball.radius * scale * 1.1 * sizeFactor, ball.radius * scale * 0.4 * sizeFactor, 0, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        function drawTrail() {
+            trail.forEach((pos, i) => {
+                let alpha = 0.5 * (i / trail.length);
+                ctx.beginPath();
+                ctx.fillStyle = `rgba(211, 47, 47, ${alpha})`; // Red-700
+                ctx.arc(pos.x, pos.y, ball.radius * scale * (0.3 + 0.7 * (i / trail.length)), 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+
+        // --- Core Simulation Logic ---
+        function resetCamera() {
+            const leftMargin = 60;
+            const leftMostX = Math.min(env.rampActualTopX_px, env.rampBottomX_px);
+            cameraOffset = Math.min(0, leftMostX - leftMargin);
+        }
+
+        function resetBallState() {
+            ball.x = env.rampActualTopX_px;
+            ball.y = env.rampActualTopY_px;
+            ball.v = 0;
+            ball.s_travelled = 0;
+            ball.phase = 'ramp';
+            trail = [];
+            env.actualRange = NaN;
+            updateRangeDisplay();
+        }
+        
+        // This function handles all geometry calculations and drawing
+        function updateSimulation() {
+            // Get input values
+            env.tableHeight_m = parseFloat(controls.tableHeight.number.value);
+            env.rampAngleDeg = parseFloat(controls.rampAngle.number.value);
+            env.rampAngleRad = env.rampAngleDeg * Math.PI / 180;
+            env.rampStartHeight_m = parseFloat(controls.rampHeight.number.value);
+            env.mu = parseFloat(controls.mu.number.value);
+            env.launchAngleDeg = parseFloat(controls.launchAngle.number.value);
+            env.launchAngleRad = env.launchAngleDeg * Math.PI / 180;
+            env.isMathMode = mathModeCheckbox.checked;
+
+            // --- Geometric calculations (from bottom-up, based on fixed canvas height) ---
+            const floorBuffer_px = 50;
+            env.floorY_px = canvasFixedHeight - floorBuffer_px;
+            env.tableTopY_px = env.floorY_px - env.tableHeight_m * scale;
+            env.tableEdgeX_px = canvas.width * 0.4;
+            env.tableStartX_px = canvas.width * 0.1;
+
+            if (Math.sin(env.rampAngleRad) < 1e-6) env.rampAngleRad = 10 * Math.PI / 180;
+            // The ramp length is now always calculated based on the input height and angle,
+            // allowing the ramp to extend off-screen for physical accuracy.
+            env.rampTravelDistance_m = env.rampStartHeight_m / Math.sin(env.rampAngleRad);
+            
+            env.rampBottomY_px = env.tableTopY_px;
+            env.rampBottomX_px = env.tableStartX_px + 50;
+            env.rampActualTopX_px = env.rampBottomX_px - env.rampTravelDistance_m * Math.cos(env.rampAngleRad) * scale;
+            env.rampActualTopY_px = env.rampBottomY_px - env.rampTravelDistance_m * Math.sin(env.rampAngleRad) * scale;
+
+            env.launchVisualTopX_px = env.tableEdgeX_px + launchRampVisualLength * scale * Math.cos(env.launchAngleRad);
+            env.launchVisualTopY_px = env.tableTopY_px - launchRampVisualLength * scale * Math.sin(env.launchAngleRad);
+
+            // Set ball start position and reset camera
+            resetBallState();
+            resetCamera();
+
+            drawStaticFrame(); // Draw the initial state
+        }
+        
+        // --- Draw Static Scene ---
+        function drawStaticFrame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawSky();
+            ctx.save();
+            ctx.translate(-cameraOffset, 0);
+            drawGround();
+            drawRamp();
+            drawTable();
+            drawLaunchRampVisual();
+            drawBallItself(ball.x, ball.y);
+            ctx.restore();
+        }
+
+        // --- Main Update Loop ---
+        function update(timestamp) {
+            if (!simulationRunning) return;
+            if (!lastTime) lastTime = timestamp;
+            const dt = Math.min((timestamp - lastTime) / 1000, 0.03); // Cap dt
+            lastTime = timestamp;
+
+            // State machine for ball phases
+            if (ball.phase === 'ramp') {
+                const a = (5 / 7) * g * Math.sin(env.rampAngleRad); // Rolling without slipping
+                let deltaS = ball.v * dt + 0.5 * a * dt * dt;
+                ball.v += a * dt;
+                ball.s_travelled += deltaS;
+
+                if (ball.s_travelled >= env.rampTravelDistance_m) {
+                    ball.s_travelled = env.rampTravelDistance_m;
+                    ball.v = Math.sqrt(2 * a * ball.s_travelled);
+                    ball.phase = 'table';
+                    ball.x = env.rampBottomX_px;
+                    ball.y = env.tableTopY_px - ball.radius * scale;
+                    trail = [];
+                } else {
+                    ball.x = env.rampActualTopX_px + ball.s_travelled * Math.cos(env.rampAngleRad) * scale;
+                    ball.y = env.rampActualTopY_px + ball.s_travelled * Math.sin(env.rampAngleRad) * scale;
+                }
+            } else if (ball.phase === 'table') {
+                const a = -env.mu * g;
+                let next_x_px = ball.x + (ball.v * dt + 0.5 * a * dt * dt) * scale;
+                let next_v = Math.max(0, ball.v + a * dt);
+
+                if (next_x_px >= env.tableEdgeX_px) {
+                    const dist_to_edge_m = (env.tableEdgeX_px - ball.x) / scale;
+                    
+                    let time_to_edge;
+                    if (Math.abs(a) < 1e-9) { 
+                        time_to_edge = (ball.v > 0) ? dist_to_edge_m / ball.v : 0;
+                    } else {
+                        const discriminant = ball.v * ball.v + 2 * a * dist_to_edge_m;
+                        time_to_edge = (discriminant >= 0) ? (-ball.v + Math.sqrt(discriminant)) / a : 0;
+                    }
+                    
+                    ball.v = Math.max(0, ball.v + a * time_to_edge);
+                    
+                    ball.phase = 'projectile';
+                    ball.x = env.tableEdgeX_px;
+                    ball.y = env.tableTopY_px - ball.radius * scale;
+
+                    projectile.vx_mps = ball.v * Math.cos(env.launchAngleRad);
+                    projectile.vy_mps = ball.v * Math.sin(env.launchAngleRad);
+                    projectile.initialX_px = ball.x;
+                    projectile.initialY_px = ball.y;
+                    projectile.startTime = lastTime + time_to_edge * 1000;
+                    trail = [];
+                } else {
+                    ball.v = next_v;
+                    ball.x = next_x_px;
+                    ball.y = env.tableTopY_px - ball.radius * scale;
+                }
+            } else if (ball.phase === 'projectile') {
+                const t = (timestamp - projectile.startTime) / 1000;
+                ball.x = projectile.initialX_px + projectile.vx_mps * t * scale;
+                let deltaY_meters = projectile.vy_mps * t - 0.5 * g * t * t;
+                ball.y = projectile.initialY_px - deltaY_meters * scale;
+
+                if (ball.y + ball.radius * scale >= env.floorY_px) {
+                    ball.y = env.floorY_px - ball.radius * scale;
+                    ball.phase = 'landed';
+                    simulationRunning = false;
+                    cancelAnimationFrame(animationId);
+
+                    env.actualRange = (ball.x - projectile.initialX_px) / scale;
+                    if (!env.isMathMode) {
+                        let errorFactor = 1 + (Math.random() * 2 - 1) * errorMagnitude;
+                        env.actualRange *= errorFactor;
+                    }
+                    env.actualRange = Math.max(0, env.actualRange);
+                    updateRangeDisplay();
+                }
+            }
+
+            // Panning Camera Logic: Only pan when the ball is in the projectile phase.
+            if (ball.phase === 'projectile') {
+                const relativeX = ball.x - cameraOffset;
+                const followThresholdRight = canvas.width * 0.75;
+                const followThresholdLeft = canvas.width * 0.3;
+                if (relativeX > followThresholdRight) {
+                    cameraOffset += (relativeX - followThresholdRight) * 0.1;
+                } else if (relativeX < followThresholdLeft) {
+                    cameraOffset += (relativeX - followThresholdLeft) * 0.1;
+                    cameraOffset = Math.max(0, cameraOffset);
+                }
+            }
+            
+            // Drawing
+            drawStaticFrame(); // Redraws background and static elements
+            ctx.save();
+            ctx.translate(-cameraOffset, 0);
+            
+            if (['ramp', 'table', 'projectile'].includes(ball.phase)) {
+                trail.push({ x: ball.x, y: ball.y });
+                if (trail.length > 20) trail.shift();
+            }
+            drawTrail();
+            if (ball.phase === 'projectile') {
+                drawShadow(ball.x, ball.y);
+            }
+            drawBallItself(ball.x, ball.y);
+            
+            ctx.restore();
+
+            if (simulationRunning) {
+                animationId = requestAnimationFrame(update);
+            }
+        }
+
+        // --- Event Listeners ---
+        startBtn.addEventListener("click", () => {
+            if (simulationRunning) return;
+            resetBallState();
+            resetCamera();
+            simulationRunning = true;
+            lastTime = null;
+            animationId = requestAnimationFrame(update);
+        });
+        
+        resetBtn.addEventListener("click", () => {
+            cancelAnimationFrame(animationId);
+            simulationRunning = false;
+            lastTime = null;
+            updateSimulation();
+        });
+
+        // This function handles the initial setup and resize
+        function initApp() {
+            const container = document.getElementById('canvasContainer');
+            canvas.width = container.offsetWidth;
+            canvas.height = canvasFixedHeight;
+            updateSimulation();
+        }
+
+        // --- Initial Load & Resize Handling ---
+        window.addEventListener('resize', initApp);
+        window.onload = initApp;
+
+    </script>
+</body>
+</html>
