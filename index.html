@@ -3,540 +3,2418 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ramp and Projectile Lab Simulation</title>
-    <!-- Tailwind CSS for modern styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for icons -->
+    <title>Ramp & Projectile Lab Simulator | Physics Kinematics & Gravity Determination</title>
+    <meta name="description" content="Interactive physics laboratory simulation for ramp roll, table friction, photogate velocity measurement, and projectile motion. Determine experimental gravity (g) and predict trajectory range.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- KaTeX for High-Quality Mathematical Typography -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderAllMath()"></script>
+
     <style>
-        /* Custom font and base styling */
-        body {
-            font-family: 'Inter', sans-serif;
+        :root {
+            --bg-body: #0b1120;
+            --bg-card: rgba(15, 23, 42, 0.78);
+            --bg-card-border: rgba(148, 163, 184, 0.12);
+            --bg-panel: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-blue-hover: #0284c7;
+            --accent-indigo: #6366f1;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --shadow-subtle: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+            --shadow-glow: 0 0 25px -5px rgba(56, 189, 248, 0.25);
         }
-        /* Style for range inputs to match the theme */
+
+        /* Light Theme Overrides */
+        body.light-theme {
+            --bg-body: #f1f5f9;
+            --bg-card: rgba(255, 255, 255, 0.88);
+            --bg-card-border: rgba(203, 213, 225, 0.7);
+            --bg-panel: #ffffff;
+            --accent-blue: #0284c7;
+            --accent-blue-hover: #0369a1;
+            --accent-indigo: #4f46e5;
+            --accent-emerald: #059669;
+            --accent-amber: #d97706;
+            --accent-rose: #e11d48;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --shadow-subtle: 0 4px 24px -2px rgba(15, 23, 42, 0.08);
+            --shadow-glow: 0 0 25px -5px rgba(2, 132, 199, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            padding: 1rem;
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+
+        /* Layout Container */
+        .app-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* Top Bar & Header */
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.85rem 1.25rem;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--bg-card-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+
+        h1 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            color: var(--text-primary);
+        }
+
+        .brand-subtitle {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Lab Mode Switcher Tabs */
+        .lab-mode-tabs {
+            display: flex;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid var(--bg-card-border);
+            gap: 4px;
+        }
+
+        body.light-theme .lab-mode-tabs {
+            background: #e2e8f0;
+        }
+
+        .mode-tab-btn {
+            padding: 0.5rem 1rem;
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .mode-tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .mode-tab-btn.active {
+            background: var(--accent-blue);
+            color: #0f172a;
+            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35);
+        }
+
+        body.light-theme .mode-tab-btn.active {
+            color: #ffffff;
+            background: var(--accent-blue);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .theme-toggle-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            color: var(--text-secondary);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--accent-blue);
+        }
+
+        /* Main Content Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 360px;
+            gap: 1.25rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1080px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Simulation Canvas Card */
+        .canvas-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--bg-card-border);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-subtle);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .canvas-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--bg-card-border);
+            background: rgba(15, 23, 42, 0.3);
+            font-size: 0.8rem;
+        }
+
+        body.light-theme .canvas-toolbar {
+            background: rgba(241, 245, 249, 0.6);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            background: rgba(100, 116, 139, 0.2);
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .status-badge.active .status-dot {
+            background: var(--accent-emerald);
+            box-shadow: 0 0 8px var(--accent-emerald);
+            animation: pulse-dot 1.4s infinite;
+        }
+
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+        }
+
+        .status-badge.stopped .status-dot {
+            background: var(--accent-amber);
+        }
+        .status-badge.stopped {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .speed-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .speed-btn {
+            background: transparent;
+            border: 1px solid var(--bg-card-border);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .speed-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--accent-blue);
+        }
+
+        .speed-btn.active {
+            background: var(--accent-blue);
+            color: #0f172a;
+            border-color: var(--accent-blue);
+            font-weight: 700;
+        }
+
+        /* Canvas Wrapper */
+        #canvasContainer {
+            position: relative;
+            width: 100%;
+            height: 520px;
+            background: #0f172a;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        canvas#simCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* HUD Overlays */
+        .hud-overlay {
+            position: absolute;
+            pointer-events: none;
+            display: flex;
+            gap: 0.75rem;
+            z-index: 10;
+        }
+
+        .hud-top-left {
+            top: 1rem;
+            left: 1rem;
+            flex-direction: column;
+        }
+
+        .hud-top-right {
+            top: 1rem;
+            right: 1rem;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .hud-badge {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 0.6rem 0.9rem;
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+            display: flex;
+            align-items: baseline;
+            gap: 0.4rem;
+            pointer-events: auto;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.light-theme .hud-badge {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(203, 213, 225, 0.8);
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+        }
+
+        .hud-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .hud-value {
+            font-family: var(--font-mono);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .hud-unit {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Photogate Gate HUD Badge */
+        .hud-gate {
+            border-left: 3px solid var(--accent-emerald);
+        }
+        .hud-gate .hud-value {
+            color: var(--accent-emerald);
+        }
+
+        /* Playback Action Buttons Footer */
+        .canvas-footer {
+            padding: 0.85rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border-top: 1px solid var(--bg-card-border);
+            background: rgba(15, 23, 42, 0.35);
+        }
+
+        body.light-theme .canvas-footer {
+            background: rgba(241, 245, 249, 0.6);
+        }
+
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.55rem 1.15rem;
+            border-radius: var(--radius-md);
+            border: 1px solid transparent;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            border-color: var(--bg-card-border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--bg-panel);
+            border-color: var(--accent-blue);
+        }
+
+        /* Controls Panel */
+        .controls-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--bg-card-border);
+            border-radius: var(--radius-xl);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid var(--bg-card-border);
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Control Input Groups */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .control-label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .input-number-wrap {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .control-num-input {
+            width: 76px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--bg-card-border);
+            border-radius: 6px;
+            padding: 3px 6px;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            text-align: right;
+            transition: border-color 0.15s;
+        }
+
+        body.light-theme .control-num-input {
+            background: #ffffff;
+            border-color: #cbd5e1;
+        }
+
+        .control-num-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        .unit-tag {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Modern Custom Range Slider */
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
-            height: 8px;
-            background: #d1d5db; /* gray-300 */
+            height: 6px;
+            background: rgba(148, 163, 184, 0.2);
             border-radius: 9999px;
             outline: none;
-            opacity: 0.9;
-            transition: opacity .2s;
+            transition: background 0.15s;
         }
-        input[type="range"]:hover {
-            opacity: 1;
-        }
+
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #3b82f6; /* blue-500 */
+            width: 18px;
+            height: 18px;
+            background: var(--accent-blue);
+            border-radius: 50%;
             cursor: pointer;
-            border-radius: 9999px;
-            border: 2px solid white;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.1s, box-shadow 0.1s;
         }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 10px var(--accent-blue);
+        }
+
         input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #3b82f6; /* blue-500 */
+            width: 18px;
+            height: 18px;
+            background: var(--accent-blue);
+            border-radius: 50%;
             cursor: pointer;
-            border-radius: 9999px;
-            border: 2px solid white;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Toggle Checkbox Row */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0.85rem;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--bg-card-border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        body.light-theme .toggle-row {
+            background: rgba(241, 245, 249, 0.6);
+        }
+
+        .toggle-row:hover {
+            background: rgba(56, 189, 248, 0.08);
+        }
+
+        .toggle-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .toggle-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .toggle-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* Switch UI */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 38px;
+            height: 20px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider-switch {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #475569;
+            transition: .25s;
+            border-radius: 34px;
+        }
+        .slider-switch:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .25s;
+            border-radius: 50%;
+        }
+        input:checked + .slider-switch {
+            background-color: var(--accent-blue);
+        }
+        input:checked + .slider-switch:before {
+            transform: translateX(18px);
+        }
+
+        /* Lab 2 Interactive Analysis Dashboard */
+        .lab2-dashboard {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--bg-card-border);
+            border-radius: var(--radius-xl);
+            padding: 1.25rem 1.5rem;
+            box-shadow: var(--shadow-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border-bottom: 1px solid var(--bg-card-border);
+            padding-bottom: 0.75rem;
+        }
+
+        .dash-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .dash-badge {
+            background: linear-gradient(135deg, var(--accent-emerald), #059669);
+            color: white;
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .dash-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .lab2-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .data-card {
+            background: rgba(15, 23, 42, 0.45);
+            border: 1px solid var(--bg-card-border);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        body.light-theme .data-card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+        }
+
+        .data-card-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Remove browser number spinner buttons */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .metric-box {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--bg-card-border);
+            border-radius: var(--radius-md);
+            padding: 0.7rem 0.85rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 72px;
+        }
+
+        body.light-theme .metric-box {
+            background: #f8fafc;
+        }
+
+        .metric-name {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            line-height: 1.25;
+        }
+
+        .metric-val-wrap {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            margin-top: 4px;
+            white-space: nowrap;
+        }
+
+        .metric-num {
+            font-family: var(--font-mono);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .metric-unit {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        /* Formula Banner */
+        .formula-callout {
+            background: rgba(56, 189, 248, 0.06);
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            border-radius: var(--radius-lg);
+            padding: 0.85rem 1.25rem;
+            color: var(--accent-blue);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .formula-header {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .math-formula-box {
+            font-size: 1.1rem;
+            line-height: 1.4;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 2px 0;
+        }
+
+        /* Student Verification Box */
+        .verify-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .calc-input-row {
+            display: flex;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+
+        .calc-input {
+            flex: 1;
+            min-width: 0;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--bg-card-border);
+            border-radius: var(--radius-md);
+            padding: 0.6rem 0.85rem;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--accent-emerald);
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        body.light-theme .calc-input {
+            background: #ffffff;
+            border-color: #cbd5e1;
+        }
+
+        .calc-input:focus {
+            border-color: var(--accent-emerald);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-check {
+            white-space: nowrap;
+            flex-shrink: 0;
+            padding: 0.6rem 1.15rem;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .btn-action-lab2 {
+            flex: 1;
+            font-size: 0.8rem;
+            padding: 0.55rem 0.75rem;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .result-box {
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.82rem;
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .result-box.success {
+            display: block !important;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent-emerald);
+        }
+
+        .result-box.error {
+            display: block !important;
+            background: rgba(244, 63, 94, 0.12);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--accent-rose);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Trial Log Table */
+        .trial-table-wrap {
+            overflow-x: auto;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid var(--bg-card-border);
+            border-radius: var(--radius-lg);
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        body.light-theme .trial-table-wrap {
+            background: #ffffff;
+        }
+
+        table.trial-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+
+        table.trial-table th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            padding: 0.65rem 0.85rem;
+            background: #0f172a;
+            color: var(--text-secondary);
+            font-weight: 700;
+            border-bottom: 1px solid var(--bg-card-border);
+            white-space: nowrap;
+        }
+
+        body.light-theme table.trial-table th {
+            background: #f1f5f9;
+        }
+
+        table.trial-table td {
+            padding: 0.55rem 0.85rem;
+            border-bottom: 1px solid var(--bg-card-border);
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        table.trial-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Responsive styling */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .lab-mode-tabs {
+                justify-content: center;
+            }
+            .canvas-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-group {
+                width: 100%;
+                justify-content: stretch;
+            }
+            .btn-group .btn {
+                flex: 1;
+            }
         }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body>
 
-    <div class="container mx-auto p-2 md:p-4">
-        <header class="text-center mb-6">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Ramp Projectile Simulation</h1>
+    <div class="app-container">
+        
+        <!-- Top Navigation & Brand Header -->
+        <header>
+            <div class="brand-title">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-atom"></i>
+                </div>
+                <div>
+                    <h1>Ramp &amp; Projectile Lab Simulator</h1>
+                    <div class="brand-subtitle">Kinematics, Table Friction &amp; Photogate Gravity (<em>g</em>) Determination</div>
+                </div>
+            </div>
+
+            <!-- Lab Mode Selector -->
+            <div class="lab-mode-tabs" role="tablist" aria-label="Simulation Lab Mode">
+                <button id="tabLab1" class="mode-tab-btn active" role="tab" aria-selected="true">
+                    <i class="fa-solid fa-route"></i> Lab 1: Predict Distance (&Delta;<em>d</em><sub>x</sub>)
+                </button>
+                <button id="tabLab2" class="mode-tab-btn" role="tab" aria-selected="false">
+                    <i class="fa-solid fa-stopwatch"></i> Lab 2: Determine Gravity (<em>g</em>)
+                </button>
+            </div>
+
+            <div class="header-actions">
+                <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Light / Dark Theme">
+                    <i class="fa-solid fa-sun"></i>
+                </button>
+            </div>
         </header>
 
-        <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Main Workspace (Canvas + Side Controls) -->
+        <div class="main-layout">
+            
+            <!-- Left: Interactive Simulation Viewport -->
+            <div class="canvas-card">
+                <!-- Canvas Top Bar -->
+                <div class="canvas-toolbar">
+                    <div id="simStatusBadge" class="status-badge">
+                        <span class="status-dot"></span>
+                        <span id="simStatusText">Ready to Launch</span>
+                    </div>
 
-            <!-- Left Column: Simulation Canvas -->
-            <div class="lg:w-2/3 w-full">
-                <div id="canvasContainer" class="relative bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+                    <div class="speed-controls">
+                        <span style="font-size: 0.72rem; color: var(--text-muted); margin-right: 4px;">Speed:</span>
+                        <button class="speed-btn" data-speed="0.25">0.25x</button>
+                        <button class="speed-btn" data-speed="0.5">0.5x</button>
+                        <button class="speed-btn active" data-speed="1.0">1.0x</button>
+                    </div>
+                </div>
+
+                <!-- Simulation Canvas Container -->
+                <div id="canvasContainer">
                     <canvas id="simCanvas"></canvas>
-                    <div id="rangeBox" class="absolute top-4 left-4 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-md border border-gray-200 text-gray-800" style="display: none;">
-                        <strong class="font-bold text-blue-600">Range:</strong>
-                        <span id="rangeVal" class="font-mono text-lg ml-2">0.00</span> m
+
+                    <!-- HUD Badges -->
+                    <div class="hud-overlay hud-top-left">
+                        <!-- Launch Velocity Readout -->
+                        <div id="hudGateBadge" class="hud-badge hud-gate">
+                            <i class="fa-solid fa-bolt" style="color: var(--accent-emerald); font-size: 0.85rem;"></i>
+                            <span class="hud-label">Launch <em>v</em><sub>x</sub>:</span>
+                            <span id="hudGateSpeed" class="hud-value">--.--</span>
+                            <span class="hud-unit">m/s</span>
+                        </div>
+                    </div>
+
+                    <div class="hud-overlay hud-top-right">
+                        <!-- Range Readout -->
+                        <div id="hudRangeBadge" class="hud-badge" style="display: none;">
+                            <i class="fa-solid fa-ruler-horizontal" style="color: var(--accent-blue); font-size: 0.85rem;"></i>
+                            <span class="hud-label">Distance &Delta;<em>d</em><sub>x</sub>:</span>
+                            <span id="hudRangeVal" class="hud-value">0.00</span>
+                            <span class="hud-unit">m</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas Control Buttons Footer -->
+                <div class="canvas-footer">
+                    <div class="btn-group">
+                        <button id="startBtn" class="btn btn-primary">
+                            <i class="fa-solid fa-play"></i> Start Simulation
+                        </button>
+                        <button id="pauseBtn" class="btn btn-secondary" disabled>
+                            <i class="fa-solid fa-pause"></i> Pause
+                        </button>
+                        <button id="stepBtn" class="btn btn-secondary" title="Advance one frame forward">
+                            <i class="fa-solid fa-forward-step"></i> Step
+                        </button>
+                        <button id="resetBtn" class="btn btn-secondary" title="Reset ball to ramp start">
+                            <i class="fa-solid fa-rotate-left"></i> Reset
+                        </button>
+                    </div>
+
+                    <div id="canvasHelperText" style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">
+                        Video / Photogate measures <em>v</em><sub>x</sub> at table edge &bull; 0.01s time resolution
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Controls -->
-            <div class="lg:w-1/3 w-full">
-                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
-                    <h2 class="text-xl font-bold mb-3 border-b pb-2 text-gray-900">Simulation Setup</h2>
+            <!-- Right: Simulation Controls Panel -->
+            <div class="controls-card">
+                <div class="section-header">
+                    <span class="section-title">
+                        <i class="fa-solid fa-sliders" style="color: var(--accent-blue);"></i> Parameters
+                    </span>
+                    <button id="resetParamsBtn" class="btn-secondary" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; cursor: pointer;">
+                        Defaults
+                    </button>
+                </div>
 
-                    <!-- Control Groups -->
-                    <div class="space-y-2">
-                        <div class="control-group">
-                            <label for="tableHeightRange" class="flex justify-between items-center text-sm font-medium text-gray-700">
-                                <span>Table Height (m)</span>
-                                <input type="number" id="tableHeightNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="0.5" max="2.0" step="0.05" value="1.0">
-                            </label>
-                            <input type="range" id="tableHeightRange" min="0.5" max="2.0" step="0.05" value="1.0">
-                        </div>
-
-                        <div class="control-group">
-                            <label for="rampAngleRange" class="flex justify-between items-center text-sm font-medium text-gray-700 mb-1">
-                                <span>Ramp Angle (&deg;)</span>
-                                <input type="number" id="rampAngleNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="10" max="60" step="1" value="30">
-                            </label>
-                            <input type="range" id="rampAngleRange" min="10" max="60" step="1" value="30">
-                        </div>
-
-                        <div class="control-group">
-                            <label for="rampHeightRange" class="flex justify-between items-center text-sm font-medium text-gray-700 mb-1">
-                                <span>Ramp Start Height (m)</span>
-                                <input type="number" id="rampHeightNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="0.1" max="1.5" step="0.05" value="0.7">
-                            </label>
-                            <input type="range" id="rampHeightRange" min="0.1" max="1.5" step="0.05" value="0.7">
-                        </div>
-
-                        <div class="control-group">
-                            <label for="muRange" class="flex justify-between items-center text-sm font-medium text-gray-700 mb-1">
-                                <span>Table Friction (μ)</span>
-                                <input type="number" id="muNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="0" max="0.5" step="0.01" value="0.0">
-                            </label>
-                            <input type="range" id="muRange" min="0" max="0.5" step="0.01" value="0.0">
-                        </div>
-
-                        <div class="control-group">
-                            <label for="launchAngleRange" class="flex justify-between items-center text-sm font-medium text-gray-700 mb-1">
-                                <span>Launch Ramp Angle (&deg;)</span>
-                                <input type="number" id="launchAngleNumber" class="w-20 text-sm p-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" min="0" max="80" step="1" value="0">
-                            </label>
-                            <input type="range" id="launchAngleRange" min="0" max="80" step="1" value="0">
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <label for="rampHeightRange">Ramp Start Height (<em>h</em><sub>ramp</sub>)</label>
+                        <div class="input-number-wrap">
+                            <input type="number" id="rampHeightNumber" class="control-num-input" min="0.1" max="1.5" step="0.05" value="0.70">
+                            <span class="unit-tag">m</span>
                         </div>
                     </div>
+                    <input type="range" id="rampHeightRange" min="0.1" max="1.5" step="0.05" value="0.70">
+                </div>
 
-                    <!-- Math Mode Checkbox -->
-                    <div class="mt-4 pt-4 border-t">
-                         <label class="flex items-center space-x-3 cursor-pointer">
-                            <input type="checkbox" id="mathModeCheckbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500">
-                            <span class="text-sm text-gray-700">Math Mode (Ideal, No Error)</span>
-                        </label>
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <label for="rampAngleRange">Ramp Incline Angle (<em>&theta;</em>)</label>
+                        <div class="input-number-wrap">
+                            <input type="number" id="rampAngleNumber" class="control-num-input" min="10" max="60" step="1" value="30">
+                            <span class="unit-tag">&deg;</span>
+                        </div>
                     </div>
+                    <input type="range" id="rampAngleRange" min="10" max="60" step="1" value="30">
+                </div>
 
-                    <!-- Action Buttons -->
-                    <div class="mt-6 flex items-center space-x-3">
-                        <button id="startBtn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105">
-                            <i class="fas fa-play mr-2"></i>Start Simulation
-                        </button>
-                        <button id="resetBtn" title="Reset Simulation" class="flex-shrink-0 bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-transform transform hover:scale-105">
-                            <i class="fas fa-redo"></i>
-                        </button>
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <label for="tableHeightRange">Table Drop (&Delta;<em>d</em><sub>y</sub>)</label>
+                        <div class="input-number-wrap">
+                            <input type="number" id="tableHeightNumber" class="control-num-input" min="0.4" max="2.0" step="0.05" value="1.00">
+                            <span class="unit-tag">m</span>
+                        </div>
                     </div>
+                    <input type="range" id="tableHeightRange" min="0.4" max="2.0" step="0.05" value="1.00">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <label for="tableLengthRange">Table Track Length (<em>D</em><sub>table</sub>)</label>
+                        <div class="input-number-wrap">
+                            <input type="number" id="tableLengthNumber" class="control-num-input" min="0.4" max="2.0" step="0.1" value="1.00">
+                            <span class="unit-tag">m</span>
+                        </div>
+                    </div>
+                    <input type="range" id="tableLengthRange" min="0.4" max="2.0" step="0.1" value="1.00">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <label for="muRange">Table Surface Friction (<em>&mu;</em>)</label>
+                        <div class="input-number-wrap">
+                            <input type="number" id="muNumber" class="control-num-input" min="0" max="0.5" step="0.01" value="0.00">
+                            <span class="unit-tag">&mu;</span>
+                        </div>
+                    </div>
+                    <input type="range" id="muRange" min="0" max="0.5" step="0.01" value="0.00">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <label for="launchAngleRange">Launch Ramp Angle (<em>&alpha;</em>)</label>
+                        <div class="input-number-wrap">
+                            <input type="number" id="launchAngleNumber" class="control-num-input" min="0" max="60" step="1" value="0">
+                            <span class="unit-tag">&deg;</span>
+                        </div>
+                    </div>
+                    <input type="range" id="launchAngleRange" min="0" max="60" step="1" value="0">
+                </div>
+
+                <!-- Simulation Mode Switcher -->
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <span class="toggle-title">Math Mode (Ideal)</span>
+                        <span class="toggle-desc">Theoretical zero error (<em>g</em> = 9.81 m/s<sup>2</sup>) vs realistic variance</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="mathModeCheckbox">
+                        <span class="slider-switch"></span>
+                    </label>
                 </div>
             </div>
         </div>
+
+        <!-- Lab 2 Dedicated Laboratory Dashboard -->
+        <div id="lab2Dashboard" class="lab2-dashboard">
+            <div class="dashboard-header">
+                <div class="dash-title-group">
+                    <span class="dash-badge"><i class="fa-solid fa-graduation-cap mr-1"></i> Lab 2 Mode</span>
+                    <h2 class="dash-title">Determine Acceleration Due to Gravity (<em>g</em>)</h2>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                    Target Standard: <strong style="color: var(--text-primary); font-family: var(--font-mono);"><em>g</em> = 9.81 m/s<sup>2</sup></strong>
+                </div>
+            </div>
+
+            <!-- Full-Width Kinematics Formula Banner -->
+            <div class="formula-callout">
+                <div class="formula-header">
+                    <i class="fa-solid fa-square-root-variable" style="color: var(--accent-blue);"></i> Kinematics Governing Formula (Horizontal Launch: <em>v</em><sub>iy</sub> = 0)
+                </div>
+                <div id="labFormulaBox" class="math-formula-box">
+                    $$t = \frac{\Delta d_x}{v_x} \implies g = \frac{2 \Delta d_y}{t^2} = \frac{2 \Delta d_y v_x^2}{(\Delta d_x)^2}$$
+                </div>
+            </div>
+
+            <div class="lab2-grid">
+                
+                <!-- Card 1: Photogate & Video Measurements -->
+                <div class="data-card">
+                    <div class="data-card-title">
+                        <i class="fa-solid fa-clipboard-check" style="color: var(--accent-blue);"></i> Experimental Sensor &amp; Video Readings
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <span class="metric-name">Vertical Drop (&Delta;<em>d</em><sub>y</sub>)</span>
+                            <div class="metric-val-wrap">
+                                <span id="lab2TableH" class="metric-num">1.00</span>
+                                <span class="metric-unit">m</span>
+                            </div>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-name">Horizontal Velocity (<em>v</em><sub>x</sub>)</span>
+                            <div class="metric-val-wrap">
+                                <span id="lab2GateV" class="metric-num" style="color: var(--accent-emerald);">--.--</span>
+                                <span class="metric-unit">m/s</span>
+                            </div>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-name">Horizontal Distance (&Delta;<em>d</em><sub>x</sub>)</span>
+                            <div class="metric-val-wrap">
+                                <span id="lab2RangeR" class="metric-num" style="color: var(--accent-blue);">--.--</span>
+                                <span class="metric-unit">m</span>
+                            </div>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-name">Flight Time (<em>t</em>)</span>
+                            <div class="metric-val-wrap">
+                                <span id="lab2FlightTime" class="metric-num">--.--</span>
+                                <span class="metric-unit">s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Student Calculation & Evaluation -->
+                <div class="data-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div class="data-card-title">
+                            <i class="fa-solid fa-calculator" style="color: var(--accent-emerald);"></i> Student Calculation Checker
+                        </div>
+                        <p style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.35rem; line-height: 1.4;">
+                            Using horizontal velocity (<em>v</em><sub>x</sub>), vertical drop (&Delta;<em>d</em><sub>y</sub>), and horizontal distance (&Delta;<em>d</em><sub>x</sub>) or flight time (<em>t</em>), calculate experimental gravity <em>g</em><sub>exp</sub>:
+                        </p>
+
+                        <div class="verify-card" style="margin-top: 0.75rem;">
+                            <div class="calc-input-row">
+                                <input type="number" id="studentGInput" class="calc-input" placeholder="Enter g (e.g. 9.81)" step="0.01">
+                                <button id="checkGBtn" class="btn btn-primary btn-check">
+                                    <i class="fa-solid fa-check"></i> Check Value
+                                </button>
+                            </div>
+                            <div id="checkGResult" class="result-box"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.85rem;">
+                        <button id="revealCalcBtn" class="btn btn-secondary btn-action-lab2">
+                            <i class="fa-solid fa-lightbulb"></i> Auto Calculate
+                        </button>
+                        <button id="logTrialBtn" class="btn btn-secondary btn-action-lab2">
+                            <i class="fa-solid fa-plus"></i> Record Trial
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 3: Experimental Trials Log -->
+                <div class="data-card" style="grid-column: 1 / -1;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <div class="data-card-title">
+                            <i class="fa-solid fa-table-list" style="color: var(--accent-indigo);"></i> Recorded Lab Trials
+                        </div>
+                        <button id="clearTrialsBtn" class="btn-secondary" style="font-size: 0.72rem; padding: 3px 10px; border-radius: 6px; cursor: pointer;">
+                            <i class="fa-solid fa-trash-can"></i> Clear Table
+                        </button>
+                    </div>
+
+                    <div class="trial-table-wrap">
+                        <table class="trial-table" id="trialsTable">
+                            <thead>
+                                <tr>
+                                    <th>Trial #</th>
+                                    <th>Mode</th>
+                                    <th>Drop &Delta;<i>d</i><sub>y</sub> (m)</th>
+                                    <th>Velocity <i>v</i><sub>x</sub> (m/s)</th>
+                                    <th>Distance &Delta;<i>d</i><sub>x</sub> (m)</th>
+                                    <th>Flight Time <i>t</i> (s)</th>
+                                    <th>Calc <i>g</i> (m/s&sup2;)</th>
+                                    <th>% Error vs 9.81</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trialsTableBody">
+                                <tr>
+                                    <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1rem;">
+                                        No trials logged yet. Run a simulation and click "Record Trial".
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // --- Constants and Setup ---
+        // =========================================================================
+        // KaTeX Math Rendering Helper
+        // =========================================================================
+        function renderAllMath() {
+            if (window.renderMathInElement) {
+                try {
+                    window.renderMathInElement(document.body, {
+                        delimiters: [
+                            { left: '$$', right: '$$', display: true },
+                            { left: '$', right: '$', display: false }
+                        ],
+                        throwOnError: false
+                    });
+                } catch (e) {
+                    console.warn("KaTeX render error:", e);
+                }
+            }
+        }
+
+        // =========================================================================
+        // Simulation Engine & State Management
+        // =========================================================================
         const canvas = document.getElementById("simCanvas");
         const ctx = canvas.getContext("2d");
-        const scale = 150; // Pixels per meter
-        const g = 9.81;    // m/s²
-        const launchRampVisualLength = 0.2; // m
-        // const maxVisualRampLength = 2.0;    // m -- This constant has been removed for physical accuracy
-        const errorMagnitude = 0.03;      // +/- 3% range error in Real Mode
-        const canvasFixedHeight = 530; // Fixed canvas height in pixels
 
-        // --- Get Control Elements ---
+        // Physics Constants
+        const g_standard = 9.81; // Standard Earth gravity (m/s²)
+        const ballRadius_m = 0.03; // 3cm radius (6cm diameter solid steel sphere)
+        const gateLaserWidth_px = 3;
+
+        // UI Controls & Elements
         const controls = {
-            tableHeight: { range: document.getElementById("tableHeightRange"), number: document.getElementById("tableHeightNumber") },
-            rampAngle: { range: document.getElementById("rampAngleRange"), number: document.getElementById("rampAngleNumber") },
             rampHeight: { range: document.getElementById("rampHeightRange"), number: document.getElementById("rampHeightNumber") },
+            rampAngle: { range: document.getElementById("rampAngleRange"), number: document.getElementById("rampAngleNumber") },
+            tableHeight: { range: document.getElementById("tableHeightRange"), number: document.getElementById("tableHeightNumber") },
+            tableLength: { range: document.getElementById("tableLengthRange"), number: document.getElementById("tableLengthNumber") },
             mu: { range: document.getElementById("muRange"), number: document.getElementById("muNumber") },
-            launchAngle: { range: document.getElementById("launchAngleRange"), number: document.getElementById("launchAngleNumber") },
+            launchAngle: { range: document.getElementById("launchAngleRange"), number: document.getElementById("launchAngleNumber") }
         };
+
         const mathModeCheckbox = document.getElementById("mathModeCheckbox");
-        const rangeVal = document.getElementById("rangeVal");
-        const rangeBox = document.getElementById("rangeBox");
         const startBtn = document.getElementById("startBtn");
+        const pauseBtn = document.getElementById("pauseBtn");
+        const stepBtn = document.getElementById("stepBtn");
         const resetBtn = document.getElementById("resetBtn");
+        const resetParamsBtn = document.getElementById("resetParamsBtn");
 
-        // --- Simulation State Variables ---
-        let animationId;
-        let simulationRunning = false;
-        let lastTime;
-        let trail = [];
+        const tabLab1 = document.getElementById("tabLab1");
+        const tabLab2 = document.getElementById("tabLab2");
+        const lab2Dashboard = document.getElementById("lab2Dashboard");
+        const themeToggleBtn = document.getElementById("themeToggleBtn");
+
+        const simStatusBadge = document.getElementById("simStatusBadge");
+        const simStatusText = document.getElementById("simStatusText");
+        const hudGateBadge = document.getElementById("hudGateBadge");
+        const hudGateSpeed = document.getElementById("hudGateSpeed");
+        const hudRangeBadge = document.getElementById("hudRangeBadge");
+        const hudRangeVal = document.getElementById("hudRangeVal");
+
+        const lab2TableH = document.getElementById("lab2TableH");
+        const lab2GateV = document.getElementById("lab2GateV");
+        const lab2RangeR = document.getElementById("lab2RangeR");
+        const lab2FlightTime = document.getElementById("lab2FlightTime");
+        const studentGInput = document.getElementById("studentGInput");
+        const checkGBtn = document.getElementById("checkGBtn");
+        const checkGResult = document.getElementById("checkGResult");
+        const revealCalcBtn = document.getElementById("revealCalcBtn");
+        const logTrialBtn = document.getElementById("logTrialBtn");
+        const clearTrialsBtn = document.getElementById("clearTrialsBtn");
+        const trialsTableBody = document.getElementById("trialsTableBody");
+
+        // Simulation State
+        let currentMode = 'lab1'; // 'lab1' or 'lab2'
+        let simSpeed = 1.0;
+        let animationId = null;
+        let isRunning = false;
+        let isPaused = false;
+        let lastTimestamp = null;
+        let dpr = window.devicePixelRatio || 1;
+        let pixelsPerMeter = 160;
+
+        // Camera State
         let cameraOffset = 0;
+        let targetCameraOffset = 0;
 
-        let ball = { radius: 0.03, x: 0, y: 0, phase: 'idle', v: 0, s_travelled: 0 };
-        let env = {}; // Environment parameters
-        let projectile = {}; // Projectile state
+        // Environment & World Geometry
+        let env = {
+            floorY_px: 0,
+            tableHeight_m: 1.0,
+            tableLength_m: 1.0,
+            tableTopY_px: 0,
+            tableStartX_px: 0,
+            tableEdgeX_px: 0,
+            rampBottomX_px: 0,
+            rampBottomY_px: 0,
+            rampActualTopX_px: 0,
+            rampActualTopY_px: 0,
+            rampAngleRad: 0,
+            rampTravelDistance_m: 0,
+            launchAngleRad: 0,
+            mu: 0,
+            isMathMode: false,
+            gateX_px: 0,
+            gateBeamActive: false,
+            gateTriggered: false,
+            gateVelocity_mps: null,
+            gateTransitTime_ms: null,
+            actualRange: null,
+            flightTime: null,
+            stoppedOnTable: false,
+            trialReleaseFactor: 1.0
+        };
 
-        // --- Input Synchronization ---
-        function syncInputs(source, target) {
-            target.value = source.value;
+        // Ball State
+        let ball = {
+            radius_m: ballRadius_m,
+            x: 0,
+            y: 0,
+            v: 0,
+            s_travelled: 0,
+            phase: 'idle' // 'idle', 'ramp', 'table', 'projectile', 'landed', 'stopped'
+        };
+
+        // Projectile kinematics
+        let projectile = {
+            initialX_px: 0,
+            initialY_px: 0,
+            vx_mps: 0,
+            vy_mps: 0,
+            t_impact: 0,
+            exactRange_m: 0,
+            flightTimer: 0
+        };
+
+        let trail = [];
+        let trialsLog = [];
+
+        // =========================================================================
+        // High-DPI Canvas Resizing & Viewport Calibration
+        // =========================================================================
+        function resizeCanvas() {
+            const container = document.getElementById("canvasContainer");
+            const rect = container.getBoundingClientRect();
+            dpr = window.devicePixelRatio || 1;
+
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+
+            ctx.resetTransform();
+            ctx.scale(dpr, dpr);
+
+            updateEnvironmentGeometry();
+            drawFrame();
         }
 
-        function syncRangeFromNumber(numberInput, rangeInput) {
-            const val = parseFloat(numberInput.value);
-            const min = parseFloat(rangeInput.min);
-            const max = parseFloat(rangeInput.max);
-            if (!isNaN(val)) {
-                numberInput.value = Math.max(min, Math.min(max, val));
-                rangeInput.value = numberInput.value;
-            }
-        }
+        // =========================================================================
+        // Geometry & Environment Setup
+        // =========================================================================
+        function updateEnvironmentGeometry() {
+            const logicalWidth = canvas.width / dpr;
+            const logicalHeight = canvas.height / dpr;
 
-        Object.values(controls).forEach(pair => {
-            pair.range.addEventListener("input", () => {
-                syncInputs(pair.range, pair.number);
-                if (!simulationRunning) updateSimulation();
-            });
-            pair.number.addEventListener("input", () => {
-                syncRangeFromNumber(pair.number, pair.range);
-                if (!simulationRunning) updateSimulation();
-            });
-        });
-        mathModeCheckbox.addEventListener("change", () => {
-            if (!simulationRunning) updateSimulation();
-        });
-
-        // --- Display Update ---
-        function updateRangeDisplay() {
-            if (!isNaN(env.actualRange)) {
-                rangeVal.textContent = env.actualRange.toFixed(2);
-                rangeBox.style.display = "block";
-            } else {
-                rangeBox.style.display = "none";
-            }
-        }
-        
-        // --- Drawing Functions (Enhanced for better visuals) ---
-        function drawSky() {
-            const skyGradient = ctx.createLinearGradient(0, 0, 0, env.floorY_px);
-            skyGradient.addColorStop(0, '#87CEEB'); // SkyBlue
-            skyGradient.addColorStop(1, '#E0F2FE'); // light-sky-100
-            ctx.fillStyle = skyGradient;
-            ctx.fillRect(0, 0, canvas.width, env.floorY_px);
-        }
-
-        function drawGround() {
-            const groundWidth = canvas.width * 4;
-            const groundX = -canvas.width * 1.5;
-            ctx.fillStyle = "#A7D397"; // A soft green
-            ctx.fillRect(groundX, env.floorY_px, groundWidth, canvas.height - env.floorY_px + 50);
-            ctx.strokeStyle = "#556B2F"; // DarkOliveGreen
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(groundX, env.floorY_px);
-            ctx.lineTo(groundX + groundWidth, env.floorY_px);
-            ctx.stroke();
-        }
-
-        function drawTable() {
-            const tableThickness = 20;
-            const tableGradient = ctx.createLinearGradient(0, env.tableTopY_px, 0, env.tableTopY_px + tableThickness);
-            tableGradient.addColorStop(0, "#D2B48C"); // Tan
-            tableGradient.addColorStop(1, "#A0522D"); // Sienna
-            ctx.fillStyle = tableGradient;
-            ctx.fillRect(env.tableStartX_px, env.tableTopY_px, env.tableEdgeX_px - env.tableStartX_px, tableThickness);
-
-            ctx.fillStyle = "#A0522D"; // Sienna for the front face
-            ctx.fillRect(env.tableStartX_px, env.tableTopY_px + tableThickness, env.tableEdgeX_px - env.tableStartX_px, env.floorY_px - (env.tableTopY_px + tableThickness));
-            
-            ctx.strokeStyle = "#8B4513"; // SaddleBrown
-            ctx.lineWidth = 1;
-            ctx.strokeRect(env.tableStartX_px, env.tableTopY_px, env.tableEdgeX_px - env.tableStartX_px, tableThickness);
-            
-            ctx.strokeStyle = "#333";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(env.tableEdgeX_px, env.tableTopY_px);
-            ctx.lineTo(env.tableEdgeX_px, env.floorY_px);
-            ctx.stroke();
-        }
-
-        function drawRamp() {
-            ctx.strokeStyle = "#475569"; // slate-600
-            ctx.lineWidth = 6;
-            ctx.lineCap = "round";
-            ctx.beginPath();
-            ctx.moveTo(env.rampActualTopX_px, env.rampActualTopY_px);
-            ctx.lineTo(env.rampBottomX_px, env.rampBottomY_px);
-            ctx.stroke();
-        }
-
-        function drawLaunchRampVisual() {
-            if (env.launchAngleDeg > 0) {
-                ctx.strokeStyle = "rgba(236, 72, 153, 0.8)"; // pink-500 with alpha
-                ctx.lineWidth = 3;
-                ctx.setLineDash([6, 6]);
-                ctx.beginPath();
-                ctx.moveTo(env.tableEdgeX_px, env.tableTopY_px);
-                ctx.lineTo(env.launchVisualTopX_px, env.launchVisualTopY_px);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-        }
-
-        function drawBallItself(x_px, y_px) {
-            // Check if coordinates are finite before drawing
-            if (!isFinite(x_px) || !isFinite(y_px)) {
-                console.error("Invalid ball coordinates for drawing:", x_px, y_px);
-                return;
-            }
-            const gradient = ctx.createRadialGradient(x_px - 3, y_px - 3, 2, x_px, y_px, ball.radius * scale);
-            gradient.addColorStop(0, "#FF8A80"); // Lighter red
-            gradient.addColorStop(1, "#D32F2F"); // Darker red
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(x_px, y_px, ball.radius * scale, 0, 2 * Math.PI);
-            ctx.fill();
-        }
-
-        function drawShadow(ballX_px, ballY_px) {
-            const heightAboveGround_px = Math.max(0, env.floorY_px - ballY_px - ball.radius * scale);
-            const totalFallHeight = env.tableHeight_m * scale;
-            if (heightAboveGround_px < totalFallHeight * 1.5) {
-                const shadowFactor = 1 - (heightAboveGround_px / (totalFallHeight * 1.5));
-                const sizeFactor = 1 - 0.6 * (heightAboveGround_px / (totalFallHeight * 1.5));
-                ctx.beginPath();
-                ctx.fillStyle = `rgba(0, 0, 0, ${0.25 * shadowFactor})`;
-                ctx.ellipse(ballX_px + 5, env.floorY_px, ball.radius * scale * 1.1 * sizeFactor, ball.radius * scale * 0.4 * sizeFactor, 0, 0, 2 * Math.PI);
-                ctx.fill();
-            }
-        }
-
-        function drawTrail() {
-            trail.forEach((pos, i) => {
-                let alpha = 0.5 * (i / trail.length);
-                ctx.beginPath();
-                ctx.fillStyle = `rgba(211, 47, 47, ${alpha})`; // Red-700
-                ctx.arc(pos.x, pos.y, ball.radius * scale * (0.3 + 0.7 * (i / trail.length)), 0, 2 * Math.PI);
-                ctx.fill();
-            });
-        }
-
-        // --- Core Simulation Logic ---
-        function resetCamera() {
-            const leftMargin = 60;
-            const leftMostX = Math.min(env.rampActualTopX_px, env.rampBottomX_px);
-            cameraOffset = Math.min(0, leftMostX - leftMargin);
-        }
-
-        function resetBallState() {
-            ball.x = env.rampActualTopX_px;
-            ball.y = env.rampActualTopY_px;
-            ball.v = 0;
-            ball.s_travelled = 0;
-            ball.phase = 'ramp';
-            trail = [];
-            env.actualRange = NaN;
-            updateRangeDisplay();
-        }
-        
-        // This function handles all geometry calculations and drawing
-        function updateSimulation() {
-            // Get input values
+            // Physical parameters from inputs
             env.tableHeight_m = parseFloat(controls.tableHeight.number.value);
-            env.rampAngleDeg = parseFloat(controls.rampAngle.number.value);
-            env.rampAngleRad = env.rampAngleDeg * Math.PI / 180;
-            env.rampStartHeight_m = parseFloat(controls.rampHeight.number.value);
+            env.tableLength_m = parseFloat(controls.tableLength.number.value);
+            const rampHeight_m = parseFloat(controls.rampHeight.number.value);
+            const rampAngleDeg = parseFloat(controls.rampAngle.number.value);
+            env.rampAngleRad = (rampAngleDeg * Math.PI) / 180;
             env.mu = parseFloat(controls.mu.number.value);
-            env.launchAngleDeg = parseFloat(controls.launchAngle.number.value);
-            env.launchAngleRad = env.launchAngleDeg * Math.PI / 180;
+            const launchAngleDeg = parseFloat(controls.launchAngle.number.value);
+            env.launchAngleRad = (launchAngleDeg * Math.PI) / 180;
             env.isMathMode = mathModeCheckbox.checked;
 
-            // --- Geometric calculations (from bottom-up, based on fixed canvas height) ---
-            const floorBuffer_px = 50;
-            env.floorY_px = canvasFixedHeight - floorBuffer_px;
-            env.tableTopY_px = env.floorY_px - env.tableHeight_m * scale;
-            env.tableEdgeX_px = canvas.width * 0.4;
-            env.tableStartX_px = canvas.width * 0.1;
+            // Geometry in pixels
+            const floorBuffer_px = 65;
+            env.floorY_px = logicalHeight - floorBuffer_px;
+            env.tableTopY_px = env.floorY_px - env.tableHeight_m * pixelsPerMeter;
 
-            if (Math.sin(env.rampAngleRad) < 1e-6) env.rampAngleRad = 10 * Math.PI / 180;
-            // The ramp length is now always calculated based on the input height and angle,
-            // allowing the ramp to extend off-screen for physical accuracy.
-            env.rampTravelDistance_m = env.rampStartHeight_m / Math.sin(env.rampAngleRad);
-            
+            // Fixed table layout calibrated for consistent physics across resolutions
+            env.tableStartX_px = 120;
+            env.rampBottomX_px = env.tableStartX_px + 40;
+            env.tableEdgeX_px = env.rampBottomX_px + env.tableLength_m * pixelsPerMeter;
             env.rampBottomY_px = env.tableTopY_px;
-            env.rampBottomX_px = env.tableStartX_px + 50;
-            env.rampActualTopX_px = env.rampBottomX_px - env.rampTravelDistance_m * Math.cos(env.rampAngleRad) * scale;
-            env.rampActualTopY_px = env.rampBottomY_px - env.rampTravelDistance_m * Math.sin(env.rampAngleRad) * scale;
 
-            env.launchVisualTopX_px = env.tableEdgeX_px + launchRampVisualLength * scale * Math.cos(env.launchAngleRad);
-            env.launchVisualTopY_px = env.tableTopY_px - launchRampVisualLength * scale * Math.sin(env.launchAngleRad);
+            // Ramp travel distance
+            env.rampTravelDistance_m = rampHeight_m / Math.sin(env.rampAngleRad);
+            const rampDx_px = env.rampTravelDistance_m * Math.cos(env.rampAngleRad) * pixelsPerMeter;
+            const rampDy_px = env.rampTravelDistance_m * Math.sin(env.rampAngleRad) * pixelsPerMeter;
 
-            // Set ball start position and reset camera
-            resetBallState();
-            resetCamera();
+            env.rampActualTopX_px = env.rampBottomX_px - rampDx_px;
+            env.rampActualTopY_px = env.rampBottomY_px - rampDy_px;
 
-            drawStaticFrame(); // Draw the initial state
-        }
-        
-        // --- Draw Static Scene ---
-        function drawStaticFrame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawSky();
-            ctx.save();
-            ctx.translate(-cameraOffset, 0);
-            drawGround();
-            drawRamp();
-            drawTable();
-            drawLaunchRampVisual();
-            drawBallItself(ball.x, ball.y);
-            ctx.restore();
+            // Photogate position (15px before table edge)
+            env.gateX_px = env.tableEdgeX_px - 15;
+
+            // Update live metrics cards
+            lab2TableH.textContent = env.tableHeight_m.toFixed(2);
+
+            // Reset camera and ball if idle
+            if (!isRunning) {
+                resetBallToInitial();
+                resetCamera();
+            }
         }
 
-        // --- Main Update Loop ---
-        function update(timestamp) {
-            if (!simulationRunning) return;
-            if (!lastTime) lastTime = timestamp;
-            const dt = Math.min((timestamp - lastTime) / 1000, 0.03); // Cap dt
-            lastTime = timestamp;
+        function resetCamera() {
+            const margin = 50;
+            const leftMostX = Math.min(env.rampActualTopX_px, env.tableStartX_px);
+            cameraOffset = Math.min(0, leftMostX - margin);
+            targetCameraOffset = cameraOffset;
+        }
 
-            // State machine for ball phases
+        function resetBallToInitial() {
+            ball.s_travelled = 0;
+            ball.v = 0;
+            ball.phase = 'idle';
+
+            // Position ball on top of ramp (normal offset)
+            const normalX = Math.sin(env.rampAngleRad);
+            const normalY = -Math.cos(env.rampAngleRad);
+            ball.x = env.rampActualTopX_px + normalX * ball.radius_m * pixelsPerMeter;
+            ball.y = env.rampActualTopY_px + normalY * ball.radius_m * pixelsPerMeter;
+
+            trail = [];
+            env.gateTriggered = false;
+            env.gateBeamActive = false;
+            env.gateVelocity_mps = null;
+            env.gateTransitTime_ms = null;
+            env.actualRange = null;
+            env.flightTime = null;
+            env.stoppedOnTable = false;
+            env.trialReleaseFactor = 1.0;
+
+            hudGateSpeed.textContent = '--.--';
+            hudRangeBadge.style.display = 'none';
+            checkGResult.style.display = 'none';
+
+            lab2GateV.textContent = '--.--';
+            lab2RangeR.textContent = '--.--';
+            lab2FlightTime.textContent = '--.--';
+
+            updateStatusBadge('idle', 'Ready to Launch');
+        }
+
+        function updateStatusBadge(state, text) {
+            simStatusBadge.className = 'status-badge';
+            if (state === 'active') simStatusBadge.classList.add('active');
+            if (state === 'stopped') simStatusBadge.classList.add('stopped');
+            simStatusText.textContent = text;
+        }
+
+        // =========================================================================
+        // Physics Loop (Analytical Landing & Non-Overshoot Collision)
+        // =========================================================================
+        function updatePhysics(dt) {
+            const scaledRadius_px = ball.radius_m * pixelsPerMeter;
+
+            // PHASE 1: Rolling Down the Incline
             if (ball.phase === 'ramp') {
-                const a = (5 / 7) * g * Math.sin(env.rampAngleRad); // Rolling without slipping
-                let deltaS = ball.v * dt + 0.5 * a * dt * dt;
+                // Acceleration of a solid sphere rolling without slipping: a = 5/7 * g * sin(theta)
+                // In Real Mode, slight finger release & track variation (±1.5%) scales acceleration
+                const releaseFactor = env.trialReleaseFactor || 1.0;
+                const a = (5 / 7) * g_standard * Math.sin(env.rampAngleRad) * (releaseFactor * releaseFactor);
+                const deltaS = ball.v * dt + 0.5 * a * dt * dt;
                 ball.v += a * dt;
                 ball.s_travelled += deltaS;
 
                 if (ball.s_travelled >= env.rampTravelDistance_m) {
+                    // Transition to table phase
                     ball.s_travelled = env.rampTravelDistance_m;
-                    ball.v = Math.sqrt(2 * a * ball.s_travelled);
+                    // Exact theoretical velocity at bottom with release factor
+                    ball.v = Math.sqrt(2 * a * env.rampTravelDistance_m);
                     ball.phase = 'table';
                     ball.x = env.rampBottomX_px;
-                    ball.y = env.tableTopY_px - ball.radius * scale;
+                    ball.y = env.tableTopY_px - scaledRadius_px;
                     trail = [];
+                    updateStatusBadge('active', 'Crossing Table Track');
                 } else {
-                    ball.x = env.rampActualTopX_px + ball.s_travelled * Math.cos(env.rampAngleRad) * scale;
-                    ball.y = env.rampActualTopY_px + ball.s_travelled * Math.sin(env.rampAngleRad) * scale;
-                }
-            } else if (ball.phase === 'table') {
-                const a = -env.mu * g;
-                let next_x_px = ball.x + (ball.v * dt + 0.5 * a * dt * dt) * scale;
-                let next_v = Math.max(0, ball.v + a * dt);
+                    const normalX = Math.sin(env.rampAngleRad);
+                    const normalY = -Math.cos(env.rampAngleRad);
+                    const alongX = Math.cos(env.rampAngleRad);
+                    const alongY = Math.sin(env.rampAngleRad);
 
+                    ball.x = (env.rampActualTopX_px + ball.s_travelled * alongX * pixelsPerMeter) + normalX * scaledRadius_px;
+                    ball.y = (env.rampActualTopY_px + ball.s_travelled * alongY * pixelsPerMeter) + normalY * scaledRadius_px;
+                }
+            }
+            // PHASE 2: Rolling Along the Table (with Friction)
+            else if (ball.phase === 'table') {
+                const a = -env.mu * g_standard;
+
+                // Check if friction stops the ball before edge
+                if (ball.v <= 0.0001 && env.mu > 0) {
+                    ball.v = 0;
+                    ball.phase = 'stopped';
+                    isRunning = false;
+                    cancelAnimationFrame(animationId);
+                    env.stoppedOnTable = true;
+                    updateControlButtons();
+                    updateStatusBadge('stopped', 'Ball Stopped on Table (Friction)');
+                    hudRangeVal.textContent = '0.000 (Stopped)';
+                    hudRangeBadge.style.display = 'flex';
+                    return;
+                }
+
+                const deltaX_m = ball.v * dt + 0.5 * a * dt * dt;
+                const next_v = Math.max(0, ball.v + a * dt);
+                const next_x_px = ball.x + deltaX_m * pixelsPerMeter;
+
+                // Photogate Crossing Detection
+                if (!env.gateTriggered && ball.x + scaledRadius_px >= env.gateX_px) {
+                    env.gateTriggered = true;
+                    env.gateBeamActive = true;
+                    
+                    // Photogate / Video inspection velocity measurement
+                    // In Real Mode, incorporates realistic video frame timer resolution (±0.6%)
+                    const sensorPrecision = env.isMathMode ? 1.0 : (1.0 + (Math.random() * 2 - 1) * 0.006);
+                    env.gateVelocity_mps = ball.v * sensorPrecision;
+                    env.gateTransitTime_ms = ((2 * ball.radius_m) / Math.max(0.01, env.gateVelocity_mps)) * 1000;
+
+                    // Update UI HUD & Lab 2 Card (hundredths precision: 0.01 m/s)
+                    hudGateSpeed.textContent = env.gateVelocity_mps.toFixed(2);
+                    lab2GateV.textContent = env.gateVelocity_mps.toFixed(2);
+                }
+
+                // Check if reached table edge
                 if (next_x_px >= env.tableEdgeX_px) {
-                    const dist_to_edge_m = (env.tableEdgeX_px - ball.x) / scale;
-                    
-                    let time_to_edge;
-                    if (Math.abs(a) < 1e-9) { 
-                        time_to_edge = (ball.v > 0) ? dist_to_edge_m / ball.v : 0;
+                    const distToEdge_m = (env.tableEdgeX_px - ball.x) / pixelsPerMeter;
+                    let timeToEdge = 0;
+
+                    if (Math.abs(a) < 1e-9) {
+                        timeToEdge = ball.v > 0 ? distToEdge_m / ball.v : 0;
                     } else {
-                        const discriminant = ball.v * ball.v + 2 * a * dist_to_edge_m;
-                        time_to_edge = (discriminant >= 0) ? (-ball.v + Math.sqrt(discriminant)) / a : 0;
+                        const disc = ball.v * ball.v + 2 * a * distToEdge_m;
+                        timeToEdge = disc >= 0 ? (-ball.v + Math.sqrt(disc)) / a : 0;
                     }
-                    
-                    ball.v = Math.max(0, ball.v + a * time_to_edge);
-                    
+
+                    ball.v = Math.max(0, ball.v + a * timeToEdge);
                     ball.phase = 'projectile';
                     ball.x = env.tableEdgeX_px;
-                    ball.y = env.tableTopY_px - ball.radius * scale;
+                    ball.y = env.tableTopY_px - scaledRadius_px;
 
+                    // Initialize Projectile Kinematics
                     projectile.vx_mps = ball.v * Math.cos(env.launchAngleRad);
                     projectile.vy_mps = ball.v * Math.sin(env.launchAngleRad);
                     projectile.initialX_px = ball.x;
                     projectile.initialY_px = ball.y;
-                    projectile.startTime = lastTime + time_to_edge * 1000;
+                    projectile.flightTimer = 0;
+
+                    // Analytical exact impact time: 0.5 * g * t^2 - vy * t - H = 0
+                    const H = env.tableHeight_m;
+                    const vy = projectile.vy_mps;
+                    projectile.t_impact = (vy + Math.sqrt(vy * vy + 2 * g_standard * H)) / g_standard;
+                    projectile.exactRange_m = projectile.vx_mps * projectile.t_impact;
+
                     trail = [];
+                    updateStatusBadge('active', 'In Projectile Flight');
                 } else {
                     ball.v = next_v;
                     ball.x = next_x_px;
-                    ball.y = env.tableTopY_px - ball.radius * scale;
+                    ball.y = env.tableTopY_px - scaledRadius_px;
                 }
-            } else if (ball.phase === 'projectile') {
-                const t = (timestamp - projectile.startTime) / 1000;
-                ball.x = projectile.initialX_px + projectile.vx_mps * t * scale;
-                let deltaY_meters = projectile.vy_mps * t - 0.5 * g * t * t;
-                ball.y = projectile.initialY_px - deltaY_meters * scale;
+            }
+            // PHASE 3: Projectile Motion (Exact Analytical Clamping at Touchdown)
+            else if (ball.phase === 'projectile') {
+                projectile.flightTimer += dt;
+                const t = projectile.flightTimer;
+                lab2FlightTime.textContent = t.toFixed(2);
 
-                if (ball.y + ball.radius * scale >= env.floorY_px) {
-                    ball.y = env.floorY_px - ball.radius * scale;
+                if (t >= projectile.t_impact) {
+                    // Exact touchdown moment!
+                    const t_final = projectile.t_impact;
+                    let measuredFlightTime = t_final;
+                    let measuredRange = projectile.exactRange_m;
+
+                    if (!env.isMathMode) {
+                        // Meter stick reading uncertainty (±0.6%)
+                        const readingError = (Math.random() * 2 - 1) * 0.006;
+                        measuredRange *= (1 + readingError);
+                        // Video inspection timing uncertainty (±0.01s frame resolution)
+                        const timeJitter = (Math.random() * 2 - 1) * 0.01;
+                        measuredFlightTime = Math.max(0.01, measuredFlightTime + timeJitter);
+                    }
+
+                    ball.x = projectile.initialX_px + measuredRange * pixelsPerMeter;
+                    ball.y = env.floorY_px - scaledRadius_px;
                     ball.phase = 'landed';
-                    simulationRunning = false;
+                    isRunning = false;
                     cancelAnimationFrame(animationId);
 
-                    env.actualRange = (ball.x - projectile.initialX_px) / scale;
-                    if (!env.isMathMode) {
-                        let errorFactor = 1 + (Math.random() * 2 - 1) * errorMagnitude;
-                        env.actualRange *= errorFactor;
-                    }
-                    env.actualRange = Math.max(0, env.actualRange);
-                    updateRangeDisplay();
+                    env.actualRange = Math.max(0, measuredRange);
+                    env.flightTime = measuredFlightTime;
+
+                    // Update HUD and Lab 2 cards (hundredths precision)
+                    hudRangeVal.textContent = env.actualRange.toFixed(2);
+                    hudRangeBadge.style.display = 'flex';
+                    lab2RangeR.textContent = env.actualRange.toFixed(2);
+                    lab2FlightTime.textContent = env.flightTime.toFixed(2);
+
+                    updateControlButtons();
+                    updateStatusBadge('idle', 'Landed Successfully');
+                } else {
+                    ball.x = projectile.initialX_px + projectile.vx_mps * t * pixelsPerMeter;
+                    const deltaY_m = projectile.vy_mps * t - 0.5 * g_standard * t * t;
+                    ball.y = projectile.initialY_px - deltaY_m * pixelsPerMeter;
                 }
             }
 
-            // Panning Camera Logic: Only pan when the ball is in the projectile phase.
-            if (ball.phase === 'projectile') {
-                const relativeX = ball.x - cameraOffset;
-                const followThresholdRight = canvas.width * 0.75;
-                const followThresholdLeft = canvas.width * 0.3;
-                if (relativeX > followThresholdRight) {
-                    cameraOffset += (relativeX - followThresholdRight) * 0.1;
-                } else if (relativeX < followThresholdLeft) {
-                    cameraOffset += (relativeX - followThresholdLeft) * 0.1;
-                    cameraOffset = Math.max(0, cameraOffset);
-                }
-            }
-            
-            // Drawing
-            drawStaticFrame(); // Redraws background and static elements
-            ctx.save();
-            ctx.translate(-cameraOffset, 0);
-            
+            // Record trail
             if (['ramp', 'table', 'projectile'].includes(ball.phase)) {
                 trail.push({ x: ball.x, y: ball.y });
-                if (trail.length > 20) trail.shift();
+                if (trail.length > 25) trail.shift();
             }
+
+            // Smooth Camera Tracking
+            updateCameraOffset();
+        }
+
+        function updateCameraOffset() {
+            const logicalWidth = canvas.width / dpr;
+            if (ball.phase === 'projectile' || ball.phase === 'landed') {
+                const rightThreshold = logicalWidth * 0.62;
+                const ballRelativeX = ball.x - cameraOffset;
+                if (ballRelativeX > rightThreshold) {
+                    targetCameraOffset = ball.x - rightThreshold;
+                }
+            } else if (ball.phase === 'idle' || ball.phase === 'ramp') {
+                const leftMargin = 50;
+                targetCameraOffset = Math.min(0, env.rampActualTopX_px - leftMargin);
+            }
+            cameraOffset += (targetCameraOffset - cameraOffset) * 0.12;
+        }
+
+        // =========================================================================
+        // High-Quality Rendering Engine
+        // =========================================================================
+        function drawFrame() {
+            const logicalWidth = canvas.width / dpr;
+            const logicalHeight = canvas.height / dpr;
+
+            ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+
+            // Draw Sky Atmosphere
+            const isLight = document.body.classList.contains("light-theme");
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, env.floorY_px);
+            if (isLight) {
+                skyGradient.addColorStop(0, '#e0f2fe');
+                skyGradient.addColorStop(1, '#f8fafc');
+            } else {
+                skyGradient.addColorStop(0, '#0a0f1d');
+                skyGradient.addColorStop(1, '#131e33');
+            }
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, logicalWidth, env.floorY_px);
+
+            // World Context (Translated with Camera)
+            ctx.save();
+            ctx.translate(-cameraOffset, 0);
+
+            drawGround(logicalWidth, logicalHeight);
+            drawRamp();
+            drawTable();
+            drawPhotogate();
+            drawMeasurementLines();
             drawTrail();
-            if (ball.phase === 'projectile') {
-                drawShadow(ball.x, ball.y);
-            }
-            drawBallItself(ball.x, ball.y);
-            
+            drawShadow();
+            drawBall();
+
             ctx.restore();
+        }
 
-            if (simulationRunning) {
-                animationId = requestAnimationFrame(update);
+        function drawGround(w, h) {
+            const startX = -3000;
+            const groundLength = 10000;
+            const isLight = document.body.classList.contains("light-theme");
+
+            // Ground base fill
+            ctx.fillStyle = isLight ? '#cbd5e1' : '#1e293b';
+            ctx.fillRect(startX, env.floorY_px, groundLength, h - env.floorY_px + 200);
+
+            // Top boundary line
+            ctx.strokeStyle = isLight ? '#94a3b8' : '#334155';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(startX, env.floorY_px);
+            ctx.lineTo(startX + groundLength, env.floorY_px);
+            ctx.stroke();
+
+            // Floor Metric Tick Marks
+            ctx.fillStyle = isLight ? '#64748b' : '#64748b';
+            ctx.font = '10px JetBrains Mono';
+            ctx.textAlign = 'center';
+
+            const tickSpacingMeters = 0.5;
+            const startM = -2;
+            const endM = 15;
+            for (let m = startM; m <= endM; m += tickSpacingMeters) {
+                const tickX = env.tableEdgeX_px + m * pixelsPerMeter;
+                const isMajor = Math.abs(m % 1.0) < 0.01;
+                const tickHeight = isMajor ? 12 : 6;
+
+                ctx.strokeStyle = isLight ? '#94a3b8' : '#475569';
+                ctx.lineWidth = isMajor ? 1.5 : 1;
+                ctx.beginPath();
+                ctx.moveTo(tickX, env.floorY_px);
+                ctx.lineTo(tickX, env.floorY_px + tickHeight);
+                ctx.stroke();
+
+                if (isMajor && m >= 0) {
+                    ctx.fillText(m.toFixed(1) + 'm', tickX, env.floorY_px + 25);
+                }
+            }
+
+            // Plumb line marker under table edge
+            ctx.setLineDash([4, 4]);
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(env.tableEdgeX_px, env.tableTopY_px);
+            ctx.lineTo(env.tableEdgeX_px, env.floorY_px);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawTable() {
+            const tableThickness = 18;
+            const isLight = document.body.classList.contains("light-theme");
+            const tableWidth_px = env.tableEdgeX_px - env.tableStartX_px;
+
+            // Table Legs
+            const legWidth = 14;
+            const legColor = isLight ? '#94a3b8' : '#475569';
+            ctx.fillStyle = legColor;
+
+            // Left leg
+            ctx.fillRect(env.tableStartX_px + 15, env.tableTopY_px + tableThickness, legWidth, env.floorY_px - env.tableTopY_px - tableThickness);
+            // Right leg
+            ctx.fillRect(env.tableEdgeX_px - 25, env.tableTopY_px + tableThickness, legWidth, env.floorY_px - env.tableTopY_px - tableThickness);
+
+            // Tabletop Surface (Rich Laboratory Composite Material)
+            const topGrad = ctx.createLinearGradient(0, env.tableTopY_px, 0, env.tableTopY_px + tableThickness);
+            if (isLight) {
+                topGrad.addColorStop(0, '#e2e8f0');
+                topGrad.addColorStop(1, '#94a3b8');
+            } else {
+                topGrad.addColorStop(0, '#334155');
+                topGrad.addColorStop(1, '#1e293b');
+            }
+
+            ctx.fillStyle = topGrad;
+            ctx.beginPath();
+            ctx.roundRect(env.tableStartX_px, env.tableTopY_px, tableWidth_px, tableThickness, [4, 4, 0, 0]);
+            ctx.fill();
+
+            ctx.strokeStyle = isLight ? '#64748b' : '#0ea5e9';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Table track metric markings
+            ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)';
+            ctx.lineWidth = 1;
+            for (let x = env.rampBottomX_px; x <= env.tableEdgeX_px; x += pixelsPerMeter * 0.2) {
+                ctx.beginPath();
+                ctx.moveTo(x, env.tableTopY_px);
+                ctx.lineTo(x, env.tableTopY_px + 5);
+                ctx.stroke();
             }
         }
 
-        // --- Event Listeners ---
-        startBtn.addEventListener("click", () => {
-            if (simulationRunning) return;
-            resetBallState();
-            resetCamera();
-            simulationRunning = true;
-            lastTime = null;
-            animationId = requestAnimationFrame(update);
-        });
-        
-        resetBtn.addEventListener("click", () => {
-            cancelAnimationFrame(animationId);
-            simulationRunning = false;
-            lastTime = null;
-            updateSimulation();
-        });
+        function drawRamp() {
+            const isLight = document.body.classList.contains("light-theme");
+            ctx.lineCap = "round";
 
-        // This function handles the initial setup and resize
-        function initApp() {
-            const container = document.getElementById('canvasContainer');
-            canvas.width = container.offsetWidth;
-            canvas.height = canvasFixedHeight;
-            updateSimulation();
+            // Ramp support truss under the ramp
+            ctx.beginPath();
+            ctx.moveTo(env.rampActualTopX_px, env.rampActualTopY_px);
+            ctx.lineTo(env.rampActualTopX_px, env.rampBottomY_px);
+            ctx.lineTo(env.rampBottomX_px, env.rampBottomY_px);
+            ctx.closePath();
+            ctx.fillStyle = isLight ? 'rgba(203, 213, 225, 0.35)' : 'rgba(30, 41, 59, 0.45)';
+            ctx.fill();
+
+            // Ramp structural line
+            ctx.beginPath();
+            ctx.moveTo(env.rampActualTopX_px, env.rampActualTopY_px);
+            ctx.lineTo(env.rampBottomX_px, env.rampBottomY_px);
+            ctx.strokeStyle = isLight ? '#475569' : '#0284c7';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+
+            // Smooth curved foot into table
+            ctx.beginPath();
+            ctx.moveTo(env.rampBottomX_px - 8, env.rampBottomY_px);
+            ctx.quadraticCurveTo(env.rampBottomX_px, env.rampBottomY_px, env.rampBottomX_px + 8, env.rampBottomY_px);
+            ctx.strokeStyle = isLight ? '#475569' : '#0284c7';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // Vertical height gauge line at ramp top
+            ctx.setLineDash([3, 3]);
+            ctx.strokeStyle = isLight ? '#94a3b8' : '#64748b';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(env.rampActualTopX_px, env.rampActualTopY_px);
+            ctx.lineTo(env.rampActualTopX_px, env.tableTopY_px);
+            ctx.stroke();
+            ctx.setLineDash([]);
         }
 
-        // --- Initial Load & Resize Handling ---
-        window.addEventListener('resize', initApp);
-        window.onload = initApp;
+        function drawPhotogate() {
+            const gateX = env.gateX_px;
+            const gateHeight = 44;
+            const gateY = env.tableTopY_px - gateHeight;
+            const isBeamBroken = env.gateBeamActive;
 
+            // Photogate U-Bracket body
+            ctx.fillStyle = '#1e293b';
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 2;
+
+            // Left vertical post
+            ctx.fillRect(gateX - 5, gateY, 5, gateHeight);
+            // Right vertical post
+            ctx.fillRect(gateX + 5, gateY, 5, gateHeight);
+            // Top crossbar
+            ctx.fillRect(gateX - 5, gateY, 15, 6);
+
+            // Infrared beam
+            ctx.strokeStyle = isBeamBroken ? '#10b981' : 'rgba(239, 68, 68, 0.85)';
+            ctx.lineWidth = 2;
+            const beamY = env.tableTopY_px - ballRadius_m * pixelsPerMeter;
+            ctx.beginPath();
+            ctx.moveTo(gateX - 4, beamY);
+            ctx.lineTo(gateX + 9, beamY);
+            ctx.stroke();
+
+            // Status Indicator LED on top of photogate
+            ctx.beginPath();
+            ctx.arc(gateX + 2.5, gateY + 3, 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = isBeamBroken ? '#10b981' : '#ef4444';
+            ctx.fill();
+            if (isBeamBroken) {
+                ctx.shadowColor = '#10b981';
+                ctx.shadowBlur = 8;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function drawMeasurementLines() {
+            // Draw Range Dimension Line when landed
+            if (ball.phase === 'landed' && !isNaN(env.actualRange) && env.actualRange > 0) {
+                const landingX = ball.x;
+                const dimY = env.floorY_px + 36;
+
+                // Dimension line with arrowheads
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(env.tableEdgeX_px, dimY);
+                ctx.lineTo(landingX, dimY);
+                ctx.stroke();
+
+                // Left & right extension lines
+                ctx.beginPath();
+                ctx.moveTo(env.tableEdgeX_px, env.floorY_px + 5);
+                ctx.lineTo(env.tableEdgeX_px, dimY + 6);
+                ctx.moveTo(landingX, env.floorY_px + 5);
+                ctx.lineTo(landingX, dimY + 6);
+                ctx.stroke();
+
+                // Target landing ring on floor
+                ctx.beginPath();
+                ctx.ellipse(landingX, env.floorY_px, 12, 4, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+                ctx.fill();
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Dimension Label
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 12px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Δd_x = ${env.actualRange.toFixed(2)} m`, (env.tableEdgeX_px + landingX) / 2, dimY - 6);
+            }
+        }
+
+        function drawBall() {
+            const radius_px = ballRadius_m * pixelsPerMeter;
+
+            const ballGrad = ctx.createRadialGradient(
+                ball.x - radius_px * 0.35,
+                ball.y - radius_px * 0.35,
+                radius_px * 0.1,
+                ball.x,
+                ball.y,
+                radius_px
+            );
+
+            ballGrad.addColorStop(0, '#fb7185'); // Bright highlight
+            ballGrad.addColorStop(0.4, '#e11d48'); // Rich rose red
+            ballGrad.addColorStop(1, '#881337'); // Deep shadow rim
+
+            ctx.fillStyle = ballGrad;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, radius_px, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        function drawShadow() {
+            if (ball.phase !== 'projectile') return;
+            const radius_px = ballRadius_m * pixelsPerMeter;
+            const heightAboveFloor = Math.max(0, env.floorY_px - ball.y);
+            const totalFall = env.tableHeight_m * pixelsPerMeter;
+
+            const shadowRatio = Math.max(0.1, 1 - heightAboveFloor / (totalFall * 1.5));
+            const shadowWidth = radius_px * (1 + (1 - shadowRatio) * 0.8);
+            const shadowHeight = radius_px * 0.35 * shadowRatio;
+
+            ctx.fillStyle = `rgba(0, 0, 0, ${0.35 * shadowRatio})`;
+            ctx.beginPath();
+            ctx.ellipse(ball.x, env.floorY_px, shadowWidth, shadowHeight, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawTrail() {
+            const radius_px = ballRadius_m * pixelsPerMeter;
+            trail.forEach((point, i) => {
+                const alpha = (i / trail.length) * 0.45;
+                const size = radius_px * (0.3 + (i / trail.length) * 0.6);
+                ctx.fillStyle = `rgba(244, 63, 94, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // =========================================================================
+        // Animation Loop
+        // =========================================================================
+        function loop(timestamp) {
+            if (!isRunning) return;
+            if (isPaused) {
+                lastTimestamp = timestamp;
+                animationId = requestAnimationFrame(loop);
+                return;
+            }
+
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const rawDt = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
+
+            // Cap dt to prevent frame lag explosion
+            const dt = Math.min(rawDt, 0.033) * simSpeed;
+
+            updatePhysics(dt);
+            drawFrame();
+
+            if (isRunning) {
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+
+        // =========================================================================
+        // Interactive Controls & Actions
+        // =========================================================================
+        function startSimulation() {
+            if (isRunning && !isPaused) return;
+
+            if (isPaused) {
+                isPaused = false;
+                lastTimestamp = null;
+                updateControlButtons();
+                updateStatusBadge('active', 'Resuming Simulation');
+                animationId = requestAnimationFrame(loop);
+                return;
+            }
+
+            resetBallToInitial();
+            resetCamera();
+
+            // Real Mode release variance: In Real Mode, slight finger release & track variance (±1.5%)
+            env.trialReleaseFactor = env.isMathMode ? 1.0 : (1.0 + (Math.random() * 2 - 1) * 0.015);
+
+            isRunning = true;
+            isPaused = false;
+            lastTimestamp = null;
+            ball.phase = 'ramp';
+            updateControlButtons();
+            updateStatusBadge('active', 'Accelerating Down Incline');
+            animationId = requestAnimationFrame(loop);
+        }
+
+        function pauseSimulation() {
+            if (!isRunning) return;
+            isPaused = !isPaused;
+            updateControlButtons();
+            updateStatusBadge(isPaused ? 'stopped' : 'active', isPaused ? 'Simulation Paused' : 'Running');
+        }
+
+        function stepSimulation() {
+            if (isRunning && !isPaused) {
+                isPaused = true;
+            } else if (!isRunning) {
+                resetBallToInitial();
+                env.trialReleaseFactor = env.isMathMode ? 1.0 : (1.0 + (Math.random() * 2 - 1) * 0.015);
+                isRunning = true;
+                isPaused = true;
+                ball.phase = 'ramp';
+            }
+            updatePhysics(0.016 * simSpeed);
+            drawFrame();
+            updateControlButtons();
+            updateStatusBadge('stopped', 'Stepped 1 Frame');
+        }
+
+        function resetSimulation() {
+            cancelAnimationFrame(animationId);
+            isRunning = false;
+            isPaused = false;
+            lastTimestamp = null;
+            updateEnvironmentGeometry();
+            resetBallToInitial();
+            resetCamera();
+            drawFrame();
+            updateControlButtons();
+        }
+
+        function updateControlButtons() {
+            startBtn.disabled = isRunning && !isPaused;
+            pauseBtn.disabled = !isRunning;
+            pauseBtn.innerHTML = isPaused ? '<i class="fa-solid fa-play"></i> Resume' : '<i class="fa-solid fa-pause"></i> Pause';
+        }
+
+        // =========================================================================
+        // Input Sync & Listeners
+        // =========================================================================
+        function syncInputs(source, target) {
+            target.value = source.value;
+            if (!isRunning) {
+                updateEnvironmentGeometry();
+                drawFrame();
+            }
+        }
+
+        function syncNumberWithClamp(numInput, rangeInput) {
+            let val = parseFloat(numInput.value);
+            const min = parseFloat(rangeInput.min);
+            const max = parseFloat(rangeInput.max);
+            if (!isNaN(val)) {
+                val = Math.max(min, Math.min(max, val));
+                numInput.value = val;
+                rangeInput.value = val;
+                if (!isRunning) {
+                    updateEnvironmentGeometry();
+                    drawFrame();
+                }
+            }
+        }
+
+        Object.values(controls).forEach(pair => {
+            pair.range.addEventListener("input", () => syncInputs(pair.range, pair.number));
+            pair.number.addEventListener("change", () => syncNumberWithClamp(pair.number, pair.range));
+        });
+
+        mathModeCheckbox.addEventListener("change", () => {
+            if (!isRunning) {
+                updateEnvironmentGeometry();
+                drawFrame();
+            }
+        });
+
+        // Speed Buttons
+        document.querySelectorAll(".speed-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".speed-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                simSpeed = parseFloat(btn.dataset.speed);
+            });
+        });
+
+        startBtn.addEventListener("click", startSimulation);
+        pauseBtn.addEventListener("click", pauseSimulation);
+        stepBtn.addEventListener("click", stepSimulation);
+        resetBtn.addEventListener("click", resetSimulation);
+
+        resetParamsBtn.addEventListener("click", () => {
+            controls.rampHeight.range.value = "0.70"; controls.rampHeight.number.value = "0.70";
+            controls.rampAngle.range.value = "30"; controls.rampAngle.number.value = "30";
+            controls.tableHeight.range.value = "1.00"; controls.tableHeight.number.value = "1.00";
+            controls.tableLength.range.value = "1.00"; controls.tableLength.number.value = "1.00";
+            controls.mu.range.value = "0.00"; controls.mu.number.value = "0.00";
+            controls.launchAngle.range.value = "0"; controls.launchAngle.number.value = "0";
+            mathModeCheckbox.checked = false;
+            resetSimulation();
+        });
+
+        // =========================================================================
+        // Lab 1 vs Lab 2 Mode Switching
+        // =========================================================================
+        function switchLabMode(mode) {
+            currentMode = mode;
+            if (mode === 'lab1') {
+                tabLab1.classList.add('active');
+                tabLab1.setAttribute('aria-selected', 'true');
+                tabLab2.classList.remove('active');
+                tabLab2.setAttribute('aria-selected', 'false');
+                lab2Dashboard.style.display = 'none';
+            } else {
+                tabLab2.classList.add('active');
+                tabLab2.setAttribute('aria-selected', 'true');
+                tabLab1.classList.remove('active');
+                tabLab1.setAttribute('aria-selected', 'false');
+                lab2Dashboard.style.display = 'flex';
+                // Trigger KaTeX render on tab display
+                setTimeout(renderAllMath, 50);
+            }
+        }
+
+        tabLab1.addEventListener("click", () => switchLabMode('lab1'));
+        tabLab2.addEventListener("click", () => switchLabMode('lab2'));
+
+        // Theme Toggle
+        themeToggleBtn.addEventListener("click", () => {
+            document.body.classList.toggle("light-theme");
+            const isLight = document.body.classList.contains("light-theme");
+            themeToggleBtn.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+            drawFrame();
+        });
+
+        // =========================================================================
+        // Lab 2: Student Calculation & Verification Module
+        // =========================================================================
+        function checkStudentGravity() {
+            checkGResult.style.display = 'block';
+            const rawInput = studentGInput.value ? studentGInput.value.replace(',', '.') : '';
+            const studentVal = parseFloat(rawInput);
+
+            if (isNaN(studentVal) || studentVal <= 0) {
+                checkGResult.className = 'result-box error';
+                checkGResult.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Please enter a valid positive numerical value for gravity (e.g. 9.81).';
+                return;
+            }
+
+            if (!env.gateVelocity_mps || !env.actualRange) {
+                checkGResult.className = 'result-box error';
+                checkGResult.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Please click <strong>Start Simulation</strong> first to obtain measurements for horizontal velocity (<em>v</em><sub>x</sub>) and distance (&Delta;<em>d</em><sub>x</sub>).';
+                return;
+            }
+
+            // Theoretical simulation g for this trial using hundredth fidelity
+            const dy = parseFloat(env.tableHeight_m.toFixed(2));
+            const vx = parseFloat(env.gateVelocity_mps.toFixed(2));
+            const dx = parseFloat(env.actualRange.toFixed(2));
+            const t = parseFloat((env.flightTime || (dx / vx)).toFixed(2));
+
+            // Support both standard kinematics paths:
+            // 1. g = (2 * Δd_y * vx^2) / (Δd_x)^2
+            // 2. g = (2 * Δd_y) / t^2
+            // 3. Raw simulation floating point
+            const g_from_vx_dx = (2 * dy * vx * vx) / (dx * dx);
+            const g_from_t = (2 * dy) / (t * t);
+            const g_raw = (2 * env.tableHeight_m * env.gateVelocity_mps * env.gateVelocity_mps) / (env.actualRange * env.actualRange);
+
+            const minDiff = Math.min(
+                Math.abs(studentVal - g_from_vx_dx),
+                Math.abs(studentVal - g_from_t),
+                Math.abs(studentVal - g_raw)
+            );
+            const percentError = (Math.abs(studentVal - g_standard) / g_standard) * 100;
+
+            if (minDiff < 0.25) {
+                checkGResult.className = 'result-box success';
+                checkGResult.innerHTML = `
+                    <div style="font-weight: 700; margin-bottom: 4px;">
+                        <i class="fa-solid fa-circle-check mr-1"></i> Excellent! Your calculation is verified!
+                    </div>
+                    <div>Your result: <strong>${studentVal.toFixed(2)} m/s&sup2;</strong></div>
+                    <div>Percent error vs actual (9.81 m/s&sup2;): <strong>${percentError.toFixed(2)}%</strong></div>
+                    <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">
+                        ${env.isMathMode ? 'In Math Mode: Exact theoretical 9.81 m/s².' : 'In Real Mode: Natural experimental video & sensor uncertainty.'}
+                    </div>
+                `;
+            } else {
+                checkGResult.className = 'result-box error';
+                checkGResult.innerHTML = `
+                    <div style="font-weight: 700; margin-bottom: 4px;">
+                        <i class="fa-solid fa-circle-xmark mr-1"></i> Calculation mismatch.
+                    </div>
+                    <div>Expected around: <strong>${g_from_vx_dx.toFixed(2)} m/s&sup2;</strong></div>
+                    <div style="margin-top: 4px; font-size: 0.78rem;">
+                        Check formula: <em>g</em> = (2 &middot; &Delta;<em>d</em><sub>y</sub> &middot; <em>v</em><sub>x</sub><sup>2</sup>) / (&Delta;<em>d</em><sub>x</sub>)<sup>2</sup> = (2 &times; ${dy.toFixed(2)} &times; ${vx.toFixed(2)}<sup>2</sup>) / (${dx.toFixed(2)}<sup>2</sup>)<br>
+                        or <em>g</em> = (2 &middot; &Delta;<em>d</em><sub>y</sub>) / <em>t</em><sup>2</sup> = (2 &times; ${dy.toFixed(2)}) / (${t.toFixed(2)}<sup>2</sup>)
+                    </div>
+                `;
+            }
+        }
+
+        checkGBtn.addEventListener("click", checkStudentGravity);
+        studentGInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") checkStudentGravity();
+        });
+
+        revealCalcBtn.addEventListener("click", () => {
+            if (!env.gateVelocity_mps || !env.actualRange) {
+                alert("Please start the simulation to obtain velocity and distance first.");
+                return;
+            }
+            const dy = parseFloat(env.tableHeight_m.toFixed(2));
+            const vx = parseFloat(env.gateVelocity_mps.toFixed(2));
+            const dx = parseFloat(env.actualRange.toFixed(2));
+            const g_calc = (2 * dy * vx * vx) / (dx * dx);
+            studentGInput.value = g_calc.toFixed(2);
+            checkStudentGravity();
+        });
+
+        // Record Trial in Data Log
+        logTrialBtn.addEventListener("click", () => {
+            if (!env.gateVelocity_mps || !env.actualRange) {
+                alert("Please complete a launch trial before logging.");
+                return;
+            }
+            const dy = parseFloat(env.tableHeight_m.toFixed(2));
+            const vx = parseFloat(env.gateVelocity_mps.toFixed(2));
+            const dx = parseFloat(env.actualRange.toFixed(2));
+            const t = parseFloat((env.flightTime || (dx / vx)).toFixed(2));
+            const g_calc = env.isMathMode ? 9.81 : ((2 * dy * vx * vx) / (dx * dx));
+            const percentErr = (Math.abs(g_calc - g_standard) / g_standard) * 100;
+
+            const trial = {
+                id: trialsLog.length + 1,
+                mode: env.isMathMode ? 'Math' : 'Real',
+                dy: dy.toFixed(2),
+                vx: vx.toFixed(2),
+                dx: dx.toFixed(2),
+                t: t.toFixed(2),
+                g: g_calc.toFixed(2),
+                error: percentErr.toFixed(2) + '%'
+            };
+            trialsLog.push(trial);
+            renderTrialsTable();
+        });
+
+        function renderTrialsTable() {
+            if (trialsLog.length === 0) {
+                trialsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1rem;">
+                            No trials logged yet. Run a simulation and click "Record Trial".
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            trialsTableBody.innerHTML = trialsLog.map(tr => `
+                <tr>
+                    <td>#${tr.id}</td>
+                    <td><span style="color: ${tr.mode === 'Math' ? 'var(--accent-blue)' : 'var(--accent-emerald)'}; font-weight: 700;">${tr.mode}</span></td>
+                    <td>${tr.dy}</td>
+                    <td>${tr.vx}</td>
+                    <td>${tr.dx}</td>
+                    <td>${tr.t}</td>
+                    <td style="font-weight: 700; color: var(--accent-emerald);">${tr.g}</td>
+                    <td>${tr.error}</td>
+                </tr>
+            `).join('');
+        }
+
+        clearTrialsBtn.addEventListener("click", () => {
+            trialsLog = [];
+            renderTrialsTable();
+        });
+
+        // Initial setup
+        window.addEventListener("resize", resizeCanvas);
+        window.addEventListener("DOMContentLoaded", () => {
+            resizeCanvas();
+            switchLabMode('lab1');
+            renderAllMath();
+        });
+        window.addEventListener("load", renderAllMath);
     </script>
 </body>
 </html>
