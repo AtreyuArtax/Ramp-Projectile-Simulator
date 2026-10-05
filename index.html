@@ -16,6 +16,18 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderAllMath()"></script>
+    <!-- Immediate System Theme Detection (Zero-Flash) -->
+    <script>
+        (function() {
+            try {
+                var saved = localStorage.getItem('theme-preference');
+                var isLight = saved === 'light' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+                if (isLight) {
+                    document.documentElement.classList.add('light-theme');
+                }
+            } catch(e) {}
+        })();
+    </script>
 
     <style>
         :root {
@@ -42,6 +54,7 @@
         }
 
         /* Light Theme Overrides */
+        html.light-theme body,
         body.light-theme {
             --bg-body: #f1f5f9;
             --bg-card: rgba(255, 255, 255, 0.88);
@@ -1562,13 +1575,14 @@
             env.stoppedOnTable = false;
             env.trialReleaseFactor = 1.0;
 
-            hudGateSpeed.textContent = '--.--';
+            const dashPlaceholder = env.isMathMode ? '--.---' : '--.--';
+            hudGateSpeed.textContent = dashPlaceholder;
             hudRangeBadge.style.display = 'none';
             checkGResult.style.display = 'none';
 
-            lab2GateV.textContent = '--.--';
-            lab2RangeR.textContent = '--.--';
-            lab2FlightTime.textContent = '--.--';
+            lab2GateV.textContent = dashPlaceholder;
+            lab2RangeR.textContent = dashPlaceholder;
+            lab2FlightTime.textContent = dashPlaceholder;
 
             updateStatusBadge('idle', 'Ready to Launch');
         }
@@ -1649,9 +1663,10 @@
                     env.gateVelocity_mps = ball.v * sensorPrecision;
                     env.gateTransitTime_ms = ((2 * ball.radius_m) / Math.max(0.01, env.gateVelocity_mps)) * 1000;
 
-                    // Update UI HUD & Lab 2 Card (hundredths precision: 0.01 m/s)
-                    hudGateSpeed.textContent = env.gateVelocity_mps.toFixed(2);
-                    lab2GateV.textContent = env.gateVelocity_mps.toFixed(2);
+                    // Update UI HUD & Lab 2 Card (Math Mode: 3 decimals, Real Mode: 2 decimals)
+                    const vPrec = env.isMathMode ? 3 : 2;
+                    hudGateSpeed.textContent = env.gateVelocity_mps.toFixed(vPrec);
+                    lab2GateV.textContent = env.gateVelocity_mps.toFixed(vPrec);
                 }
 
                 // Check if reached table edge
@@ -1696,7 +1711,7 @@
             else if (ball.phase === 'projectile') {
                 projectile.flightTimer += dt;
                 const t = projectile.flightTimer;
-                lab2FlightTime.textContent = t.toFixed(2);
+                lab2FlightTime.textContent = t.toFixed(env.isMathMode ? 3 : 2);
 
                 if (t >= projectile.t_impact) {
                     // Exact touchdown moment!
@@ -1722,11 +1737,12 @@
                     env.actualRange = Math.max(0, measuredRange);
                     env.flightTime = measuredFlightTime;
 
-                    // Update HUD and Lab 2 cards (hundredths precision)
-                    hudRangeVal.textContent = env.actualRange.toFixed(2);
+                    // Update HUD and Lab 2 cards (Math Mode: 3 decimals, Real Mode: 2 decimals)
+                    const prec = env.isMathMode ? 3 : 2;
+                    hudRangeVal.textContent = env.actualRange.toFixed(prec);
                     hudRangeBadge.style.display = 'flex';
-                    lab2RangeR.textContent = env.actualRange.toFixed(2);
-                    lab2FlightTime.textContent = env.flightTime.toFixed(2);
+                    lab2RangeR.textContent = env.actualRange.toFixed(prec);
+                    lab2FlightTime.textContent = env.flightTime.toFixed(prec);
 
                     updateControlButtons();
                     updateStatusBadge('idle', 'Landed Successfully');
@@ -2013,7 +2029,8 @@
                 ctx.fillStyle = '#38bdf8';
                 ctx.font = 'bold 12px JetBrains Mono';
                 ctx.textAlign = 'center';
-                ctx.fillText(`Δd_x = ${env.actualRange.toFixed(2)} m`, (env.tableEdgeX_px + landingX) / 2, dimY - 6);
+                const rangePrec = env.isMathMode ? 3 : 2;
+                ctx.fillText(`Δd_x = ${env.actualRange.toFixed(rangePrec)} m`, (env.tableEdgeX_px + landingX) / 2, dimY - 6);
             }
         }
 
@@ -2256,13 +2273,50 @@
         tabLab1.addEventListener("click", () => switchLabMode('lab1'));
         tabLab2.addEventListener("click", () => switchLabMode('lab2'));
 
-        // Theme Toggle
-        themeToggleBtn.addEventListener("click", () => {
-            document.body.classList.toggle("light-theme");
-            const isLight = document.body.classList.contains("light-theme");
-            themeToggleBtn.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+        // =========================================================================
+        // Theme Management (Defaults to OS System Mode with LocalStorage Support)
+        // =========================================================================
+        function getPreferredTheme() {
+            const savedTheme = localStorage.getItem('theme-preference');
+            if (savedTheme === 'light' || savedTheme === 'dark') {
+                return savedTheme;
+            }
+            // Default to OS system setting (prefers-color-scheme)
+            return (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+        }
+
+        function applyTheme(theme, isUserAction = false) {
+            if (isUserAction) {
+                localStorage.setItem('theme-preference', theme);
+            }
+            const isLight = (theme === 'light');
+            if (isLight) {
+                document.documentElement.classList.add('light-theme');
+                document.body.classList.add('light-theme');
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                themeToggleBtn.setAttribute('title', 'Switch to Dark Theme');
+            } else {
+                document.documentElement.classList.remove('light-theme');
+                document.body.classList.remove('light-theme');
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+                themeToggleBtn.setAttribute('title', 'Switch to Light Theme');
+            }
             drawFrame();
+        }
+
+        themeToggleBtn.addEventListener("click", () => {
+            const currentIsLight = document.body.classList.contains("light-theme");
+            applyTheme(currentIsLight ? 'dark' : 'light', true);
         });
+
+        // Listen for OS system theme changes (unless user explicitly overrode it)
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+                if (!localStorage.getItem('theme-preference')) {
+                    applyTheme(e.matches ? 'light' : 'dark', false);
+                }
+            });
+        }
 
         // =========================================================================
         // Lab 2: Student Calculation & Verification Module
@@ -2284,24 +2338,26 @@
                 return;
             }
 
-            // Theoretical simulation g for this trial using hundredth fidelity
+            // Theoretical simulation g for this trial using appropriate mode fidelity
+            const prec = env.isMathMode ? 3 : 2;
             const dy = parseFloat(env.tableHeight_m.toFixed(2));
-            const vx = parseFloat(env.gateVelocity_mps.toFixed(2));
-            const dx = parseFloat(env.actualRange.toFixed(2));
-            const t = parseFloat((env.flightTime || (dx / vx)).toFixed(2));
+            const vx = parseFloat(env.gateVelocity_mps.toFixed(prec));
+            const dx = parseFloat(env.actualRange.toFixed(prec));
+            const t = parseFloat((env.flightTime || (dx / vx)).toFixed(prec));
 
             // Support both standard kinematics paths:
             // 1. g = (2 * Δd_y * vx^2) / (Δd_x)^2
             // 2. g = (2 * Δd_y) / t^2
             // 3. Raw simulation floating point
-            const g_from_vx_dx = (2 * dy * vx * vx) / (dx * dx);
-            const g_from_t = (2 * dy) / (t * t);
+            const g_from_vx_dx = env.isMathMode ? 9.81 : ((2 * dy * vx * vx) / (dx * dx));
+            const g_from_t = env.isMathMode ? 9.81 : ((2 * dy) / (t * t));
             const g_raw = (2 * env.tableHeight_m * env.gateVelocity_mps * env.gateVelocity_mps) / (env.actualRange * env.actualRange);
 
             const minDiff = Math.min(
                 Math.abs(studentVal - g_from_vx_dx),
                 Math.abs(studentVal - g_from_t),
-                Math.abs(studentVal - g_raw)
+                Math.abs(studentVal - g_raw),
+                Math.abs(studentVal - g_standard)
             );
             const percentError = (Math.abs(studentVal - g_standard) / g_standard) * 100;
 
@@ -2323,10 +2379,10 @@
                     <div style="font-weight: 700; margin-bottom: 4px;">
                         <i class="fa-solid fa-circle-xmark mr-1"></i> Calculation mismatch.
                     </div>
-                    <div>Expected around: <strong>${g_from_vx_dx.toFixed(2)} m/s&sup2;</strong></div>
+                    <div>Expected around: <strong>${(env.isMathMode ? 9.81 : g_from_vx_dx).toFixed(2)} m/s&sup2;</strong></div>
                     <div style="margin-top: 4px; font-size: 0.78rem;">
-                        Check formula: <em>g</em> = (2 &middot; &Delta;<em>d</em><sub>y</sub> &middot; <em>v</em><sub>x</sub><sup>2</sup>) / (&Delta;<em>d</em><sub>x</sub>)<sup>2</sup> = (2 &times; ${dy.toFixed(2)} &times; ${vx.toFixed(2)}<sup>2</sup>) / (${dx.toFixed(2)}<sup>2</sup>)<br>
-                        or <em>g</em> = (2 &middot; &Delta;<em>d</em><sub>y</sub>) / <em>t</em><sup>2</sup> = (2 &times; ${dy.toFixed(2)}) / (${t.toFixed(2)}<sup>2</sup>)
+                        Check formula: <em>g</em> = (2 &middot; &Delta;<em>d</em><sub>y</sub> &middot; <em>v</em><sub>x</sub><sup>2</sup>) / (&Delta;<em>d</em><sub>x</sub>)<sup>2</sup> = (2 &times; ${dy.toFixed(2)} &times; ${vx.toFixed(prec)}<sup>2</sup>) / (${dx.toFixed(prec)}<sup>2</sup>)<br>
+                        or <em>g</em> = (2 &middot; &Delta;<em>d</em><sub>y</sub>) / <em>t</em><sup>2</sup> = (2 &times; ${dy.toFixed(2)}) / (${t.toFixed(prec)}<sup>2</sup>)
                     </div>
                 `;
             }
@@ -2342,10 +2398,11 @@
                 alert("Please start the simulation to obtain velocity and distance first.");
                 return;
             }
+            const prec = env.isMathMode ? 3 : 2;
             const dy = parseFloat(env.tableHeight_m.toFixed(2));
-            const vx = parseFloat(env.gateVelocity_mps.toFixed(2));
-            const dx = parseFloat(env.actualRange.toFixed(2));
-            const g_calc = (2 * dy * vx * vx) / (dx * dx);
+            const vx = parseFloat(env.gateVelocity_mps.toFixed(prec));
+            const dx = parseFloat(env.actualRange.toFixed(prec));
+            const g_calc = env.isMathMode ? 9.81 : ((2 * dy * vx * vx) / (dx * dx));
             studentGInput.value = g_calc.toFixed(2);
             checkStudentGravity();
         });
@@ -2356,10 +2413,11 @@
                 alert("Please complete a launch trial before logging.");
                 return;
             }
+            const prec = env.isMathMode ? 3 : 2;
             const dy = parseFloat(env.tableHeight_m.toFixed(2));
-            const vx = parseFloat(env.gateVelocity_mps.toFixed(2));
-            const dx = parseFloat(env.actualRange.toFixed(2));
-            const t = parseFloat((env.flightTime || (dx / vx)).toFixed(2));
+            const vx = parseFloat(env.gateVelocity_mps.toFixed(prec));
+            const dx = parseFloat(env.actualRange.toFixed(prec));
+            const t = parseFloat((env.flightTime || (dx / vx)).toFixed(prec));
             const g_calc = env.isMathMode ? 9.81 : ((2 * dy * vx * vx) / (dx * dx));
             const percentErr = (Math.abs(g_calc - g_standard) / g_standard) * 100;
 
@@ -2367,9 +2425,9 @@
                 id: trialsLog.length + 1,
                 mode: env.isMathMode ? 'Math' : 'Real',
                 dy: dy.toFixed(2),
-                vx: vx.toFixed(2),
-                dx: dx.toFixed(2),
-                t: t.toFixed(2),
+                vx: vx.toFixed(prec),
+                dx: dx.toFixed(prec),
+                t: t.toFixed(prec),
                 g: g_calc.toFixed(2),
                 error: percentErr.toFixed(2) + '%'
             };
@@ -2410,6 +2468,7 @@
         // Initial setup
         window.addEventListener("resize", resizeCanvas);
         window.addEventListener("DOMContentLoaded", () => {
+            applyTheme(getPreferredTheme(), false);
             resizeCanvas();
             switchLabMode('lab1');
             renderAllMath();
